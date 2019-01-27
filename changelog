@@ -1,0 +1,9 @@
+# MAZONOS - CHANGELOG
+#
+# Date 2019-01-26
+# Diego Sarzi  <diegosarzi@gmail.com>
++ Build ConsoleKit
+/ Rebuild MESA (Support i915,r600,nouveau,radeonsi,svga,swrast)
+- (test)Uninstall XscreenSaver for check bugs ( video startx crash )
+/ Rebuild PulseAudio support bluez5
++ Build bluez-5.50 deps(+ell-0.9,+json-c,+libical,+libicu)
