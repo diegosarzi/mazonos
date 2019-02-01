@@ -1,0 +1,8 @@
+> LFS / 01/02/2019 - 02:24am
+######### anotações #########
+# Sistema temporário com flags "-O2".
+- GCC - PARTE 01
+# Adicionei a flag CFLAGS="-O2" e CXXFLAGS="-O2";
+# Com isso precisei adicionar --distable-bootstrap para compiar o gcc fora da conf padrão da minha maquina;
+- GLIBC
+# Tive problemas na instalação na primeira compilação. Vou tentar novamente.
