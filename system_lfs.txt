@@ -1,0 +1,182 @@
+> LFS 8.3 / 01/02/2019 - 04:06am
+
+######### anotações #########
+# Sistema com flags CFLAGS="-O2" CXXFLAGS="-O2".
+# Utilizando um processador: AMD FX(tm)-8350 Eight-Core Processor
+# Flags exportadas: MAKEFLAGS="-j 8"
+
+- Linux-4.18.5 API Headers
+
+- Man-pages-4.16
+
+- Glibc-2.28 * createpkg
+# time make: 2m12.731s
+# time test: 19m27.449s
+
+# tests: [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+
+# /usr/lib/../lib/crt1.o succeeded
+# /usr/lib/../lib/crti.o succeeded
+# /usr/lib/../lib/crtn.o succeeded
+
+# #include <...> search starts here:
+# /usr/include
+
+# SEARCH_DIR("=/tools/x86_64-pc-linux-gnu/lib64")
+# SEARCH_DIR("/usr/lib")
+# SEARCH_DIR("/lib")
+# SEARCH_DIR("=/tools/x86_64-pc-linux-gnu/lib");
+
+# attempt to open /lib/libc.so.6 succeeded
+
+# found ld-linux-x86-64.so.2 at /lib/ld-linux-x86-64.so.2
+
+- Zlib-1.2.11
+# time make: 0m1.152s
+# .mz created.
+
+- File-5.34
+# time make: 0m1.424s
+# .mz created.
+
+- Readline-7.0
+
+- M4-1.4.18
+# time make: 0m2.133s
+# .mz created com problemas, pois não consegui colocar m4 tive que colocar mfour.
+# Pedir ajustes para o slackjeff.
+
+- Bc-1.07.1
+# time make: 0m1.779s
+# .mz created
+
+- Binutils-2.31.1
+# time make: 1m41.281s
+# time make check: 4m1.272s
+# .mz created
+
+- GMP-6.1.2
+# time make: 0m15.662s
+# time make check: 0m38.586s
+# .mz created
+
+- MPFR-4.0.1
+# time make: 0m12.285s
+# time make check: 0m18.481s
+# .mz created
+
+- MPC-1.1.0
+# time make: 0m1.824s
+# .mz created
+
+- Shadow-4.6
+# time make: 0m3.450s
+# .mz created
+
+- GCC-8.2.0
+# time make: 7m35.439s
+# time make check: 42m9.848s
+# [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+# /usr/lib/gcc/x86_64-pc-linux-gnu/8.2.0/../../../../lib/crt1.o succeeded
+# /usr/lib/gcc/x86_64-pc-linux-gnu/8.2.0/../../../../lib/crti.o succeeded
+# /usr/lib/gcc/x86_64-pc-linux-gnu/8.2.0/../../../../lib/crtn.o succeeded
+# #include <...> search starts here:
+# /usr/lib/gcc/x86_64-pc-linux-gnu/8.2.0/include
+# /usr/local/include
+# /usr/lib/gcc/x86_64-pc-linux-gnu/8.2.0/include-fixed
+# /usr/include
+# SEARCH_DIR("/usr/x86_64-pc-linux-gnu/lib64")
+# SEARCH_DIR("/usr/local/lib64")
+# SEARCH_DIR("/lib64")
+# SEARCH_DIR("/usr/lib64")
+# SEARCH_DIR("/usr/x86_64-pc-linux-gnu/lib")
+# SEARCH_DIR("/usr/local/lib")
+# SEARCH_DIR("/lib")
+# SEARCH_DIR("/usr/lib");
+# attempt to open /lib/libc.so.6 succeeded
+# found ld-linux-x86-64.so.2 at /lib/ld-linux-x86-64.so.2
+#
+# .mz created (no scripts)
+
+- Bzip2-1.0.6
+# .mz created (no scripts)
+
+- Pkg-config-0.29.2
+# time make: 0m6.217s
+# .mz created ( Nota precisei criar como pkg_config e não pkg-config.
+
+- Ncurses-6.1
+# time make: 0m11.920s
+# .mz created (no scripts)
+
+- Attr-2.4.48
+# time make: 0m0.675s
+# .mz created
+
+- Acl-2.2.53
+# time make: 0m1.771s
+# .mz created
+
+- Libcap-2.25 * pesquisar como empacotar
+# tima make: 0m0.692s
+# http://www.linuxfromscratch.org/lfs/view/8.3/chapter06/libcap.html
+
+- Sed-4.5
+# time make: 0m1.598s
+# time make check: 0m9.080s
+# .mz created
+
+- Psmisc-23.1
+# time make: 0m0.768s
+# .mz created
+
+- Iana-Etc-2.30
+# .mz created
+
+- Bison-3.0.5
+# time make: 0m2.810s
+# .mz created
+
+- Flex-2.6.4
+# time make: 0m3.382s
+# .mz created (script)
+
+- Grep-3.1
+# time make: 0m2.204s
+# .mz created
+
+- Bash-4.4.18
+# time make: 0m7.434s
+# time make check: 
+# .mz created
+
+- Libtool-2.4.6
+# time make: 0m1.596s
+# time make check: 0m4.079s
+# .mz created
+
+- GDBM-1.17
+# time make: 0m1.773s
+# time make check: 0m4.534s
+# .mz created
+
+- Gperf-3.1
+# time make: 0m0.880s
+# time make check: 0m1.329s
+# .mz created
+
+- Expat-2.2.6
+# time make: 0m4.351s
+# time make check: 0m3.812s
+# .mz created
+
+- Inetutils-1.9.4
+# time make: 0m4.609s
+# time make check: 0m0.892s
+# .mz created
+
+- Perl-5.28.0 * Precisa ser empacotado, destdir nao funciona
+# time make: 0m24.852s
+# para funcionar a compilação precisei fazer um ln -s /usr/lib/bzip2.so /usr/local/lib/
+
+- 
