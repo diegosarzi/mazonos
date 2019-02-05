@@ -1,0 +1,5 @@
+#!/bin/bash
+sed -i "1s/^/#------------------#\n/" /root/changelog.txt
+sed -i "1s/^/Diego Sarzi <diegosarzi@gmail.com>\n\n/" /root/changelog.txt
+vim /root/changelog.txt
+sed -i "1s/^/$(date)\n/" changelog.txt

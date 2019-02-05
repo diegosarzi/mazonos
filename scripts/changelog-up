@@ -1,0 +1,2 @@
+#!/bin/bash
+rsync -ave ssh /root/changelog.txt diegosarzi@frs.sourceforge.net:/home/frs/project/mazonos/

@@ -1,0 +1,19 @@
+#!/bin/bash
+##################################################
+# Script update bananapkg in system.             #
+# autor: Diego Sarzi <diegosarzi@gmail.com>      #
+# licence: MIT                                   #
+#################################################
+
+cd /tmp/
+echo "Create temp directory /tmp/bananapkg/"
+git clone http://github.com/mazonos/bananapkg.git
+
+cd bananapkg/
+chmod -v +x createpkg burnpkg plantpkg
+cp -v createpkg burnpkg plantpkg /sbin/
+
+echo "Burn temp files..."
+rm -rf /tmp/bananapkg/
+echo "Update complete! Bananapkg"
+cd ~

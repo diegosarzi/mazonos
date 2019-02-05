@@ -1,0 +1,2 @@
+#!/bin/bash
+rsync -ave ssh /packages/* diegosarzi@frs.sourceforge.net:/home/frs/project/mazonos/packages/.
