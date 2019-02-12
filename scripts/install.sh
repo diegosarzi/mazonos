@@ -1,0 +1,1373 @@
+#!/bin/bash
+#######################################################
+#       install script Mazon OS - version 0.0.1       #
+#                                                     #
+#      @utor: Diego Sarzi <diegosarzi@gmail.com>      #
+#      created: 2019/02/12          licence: MIT      #
+#######################################################
+
+echo -e "\nDownload mazon-lasted.tar.xz? Y/n"
+read download
+if [ $download = "y" ] || [ $download = "Y" ]
+then
+	wget https://sourceforge.net/projects/mazonos/files/mazon_beta-1.0.tar.xz
+fi
+
+echo -e "\nPlease inform the installation path: ex: /mnt"
+read path
+
+x="on"
+menu()
+{
+	while true $x != "on"
+	do
+		sleep 1
+		clear
+		echo "Welcome Mazon install."
+		echo "---------------------"
+		echo "1 - Full # 9Gb Required"
+		echo "2 - Minimal"
+		echo "3 - Custom"
+		echo "4 - Quit"
+		echo "--------------------"
+		printf " -> "
+		read x
+
+		case "$x" in
+			1)	
+				echo "Confirm install in $path ? Y/n"
+				read confirm
+				if [ $confirm = "y" ] || [ $confirm = "Y" ]
+				then
+					echo "Full decompressing..."
+					time tar -xJpvf mazon_*.tar.xz -C $path
+					rm -f gimp.exclude vlc.exclude sublime_text.exclude qt.exclude
+					mount --type proc /proc $path/proc
+					mount --rbind /sys $path/sys
+					mount --rbind /dev $path/dev
+					echo "-----------------------------------------------"
+					echo "Install complete!"
+					echo "-----------------------------------------------"
+					echo "Modify /etc/fstab and install grub if necessary."
+					echo "Chroot in $path for configuration. Type #exit to quit."
+					chroot $path
+					exit
+				fi
+				;;
+			2)
+				echo "Minimal decompressing..."
+				time tar -xJpvf mazon_*.tar.xz \
+					--exclude="/usr/bin/libreoffice" \
+					--exclude="/usr/share/applications/libre*"  \
+					--exclude="/usr/share/applications/sublim*"  \
+					--exclude-from="qt.exclude" \
+					--exclude-from="gimp.exclude" \
+					--exclude-from="vlc.exclude" \
+					--exclude-from="sublime_text.exclude" \
+					--exclude="opt/jdk" --exclude="opt/OpenJDK-10.0.2+13-bin" \
+					--exclude="opt/Telegram" --exclude="usr/share/applications/telegram*" \
+					-C $path
+					
+					rm -f gimp.exclude vlc.exclude sublime_text.exclude qt.exclude
+					mount --type proc /proc $path/proc
+					mount --rbind /sys $path/sys
+					mount --rbind /dev $path/dev
+					echo "-----------------------------------------------"
+					echo "Install complete!"
+					echo "-----------------------------------------------"
+					echo "Modify /etc/fstab and install grub if necessary."
+					echo "Chroot in $path for configuration. Type #exit to quit."
+					chroot $path
+					exit
+				;;
+			3)
+				echo "Choose install packages:"
+				echo "GIMP? Y/n"
+				read gimpmenu
+				if [ $gimpmenu = "y" ] || [ $gimpmenu = "Y" ]
+				then
+					gimp=
+				else
+					gimp="--exclude-from=gimp.exclude"
+				fi
+
+				
+				echo "Qt5? Y/n"
+				read qtmenu
+				if [ $qtmenu = "y" ] || [ $qtmenu = "Y" ]
+				then
+					qt=
+				else
+					qt="--exclude-from=qt.exclude"
+				fi
+
+				echo "Sublime_text? Y/n"
+				read sublimemenu
+				if [ $sublimemenu = "y" ] || [ $sublimemenu = "Y" ]
+				then
+					sublime=
+				else
+					sublime="--exclude-from=sublime_text.exclude"
+				fi
+
+				echo "Vlc? Y/n"
+				read vlcmenu
+				if [ $vlcmenu = "y" ] || [ $vlcmenu = "Y" ]
+				then
+					vlc=
+				else
+					vlc="--exclude-from=vlc.exclude"
+				fi
+
+				echo "OpenJDK? Y/n"
+				read jdkmenu
+				if [ $jdkmenu = "y" ] || [ $jdkmenu = "Y" ]
+				then
+					jdk=
+				else
+					jdk="--exclude-from=jdk.exclude"
+				fi
+
+				echo "LibreOffice? Y/n"
+				read libremenu
+				if [ $libremenu = "y" ] || [ $libremenu = "Y" ]
+				then
+					libre=
+				else
+					libre="--exclude-from=libre.exclude"
+				fi
+
+				echo "Telegram? Y/n"
+				read telegrammenu
+				if [ $telegrammenu = "y" ] || [ $telegrammenu = "Y" ]
+				then
+					telegram=
+				else
+					telegram="--exclude-from=telegram.exclude"
+				fi
+
+				time tar -xJpvf mazon_*.tar.xz $gimp $qt $sublime $vlc $jdk $libre $telegram -C $path
+				rm -f gimp.exclude vlc.exclude sublime_text.exclude qt.exclude
+#				mount --type proc /proc $path/proc
+#				mount --rbind /sys $path/sys
+#				mount --rbind /dev $path/dev
+				echo "-----------------------------------------------"
+				echo "Install complete!"
+				echo "-----------------------------------------------"
+				echo "Modify /etc/fstab and install grub if necessary."
+				echo "Chroot in $path for configuration. Type #exit to quit."
+#				chroot $path
+				exit
+				;;
+			4)
+				echo "Bye bye"
+				rm -f gimp.exclude vlc.exclude sublime_text.exclude qt.exclude
+				exit
+				;;
+			*)
+				echo "Invalid"
+		esac
+	done
+}
+
+###########################
+# create custom paths
+#
+cat >> telegram.exclude << EOF
+opt/Telegram/*
+usr/share/applications/telegram*
+EOF
+
+cat >> libre.exclude << EOF
+opt/libreoffice-6.1.0.3/*
+usr/bin/libreoffice*
+usr/share/applications/libre*
+EOF
+
+cat >> jdk.exclude << EOF
+opt/OpenJDK-10.0.2+13-bin/*
+opt/jdk/*
+EOF
+
+cat >> qt.exclude << EOF
+/opt/qt5/*
+/opt/qt-5.11.1/*
+/usr/share/pixmaps/assistant-qt5.png
+/usr/share/pixmaps/transmission-qt.png
+/usr/share/pixmaps/qdbusviewer-qt5.png
+/usr/share/pixmaps/designer-qt5.png
+/usr/share/pixmaps/linguist-qt5.png
+/usr/share/applications/linguist-qt5.desktop
+/usr/share/applications/designer-qt5.desktop
+/usr/share/applications/qdbusviewer-qt5.desktop
+/usr/share/applications/assistant-qt5.desktop
+/usr/bin/moc-qt5
+/usr/bin/lrelease-qt5
+/usr/bin/rcc-qt5
+/usr/bin/uic-qt5
+/usr/bin/lupdate-qt5
+/usr/bin/lconvert-qt5
+/usr/bin/qt-faststart
+/usr/bin/qmake-qt5
+EOF
+
+cat >> sublime_text.exclude << EOF
+opt/sublime_text/*
+usr/share/icons/Flat-Remix-Dark/apps/scalable/sublime-text-3.svg
+usr/share/icons/Flat-Remix-Dark/apps/scalable/sublime-text-2.svg
+usr/share/icons/Flat-Remix-Dark/apps/scalable/sublime_text.svg
+usr/share/icons/Flat-Remix-Dark/apps/scalable/sublime-text.svg
+usr/share/icons/Flat-Remix-Dark/apps/scalable/sublimetext.svg
+usr/share/icons/Flat-Remix-Dark/apps/scalable/sublime.svg
+usr/share/applications/sublime_text.desktop
+usr/bin/sublime_text/*
+EOF
+
+cat >> gimp.exclude << EOF
+usr/share/icons/hicolor/256x256/apps/gimp.png
+usr/share/icons/hicolor/24x24/apps/gimp.png
+usr/share/icons/hicolor/32x32/apps/gimp.png
+usr/share/icons/hicolor/16x16/apps/gimp.png
+usr/share/icons/hicolor/48x48/apps/gimp.png
+usr/share/icons/hicolor/22x22/apps/gimp.png
+usr/share/man/man1/gimptool-2.0.1
+usr/share/man/man1/gimp-2.10.1
+usr/share/man/man1/gimp-console-2.10.1
+usr/share/man/man1/gimp-console.1
+usr/share/man/man1/gimp.1
+usr/share/man/man5/gimprc.5
+usr/share/man/man5/gimprc-2.10.5
+usr/share/metainfo/org.gimp.GIMP.appdata.xml
+usr/share/metainfo/gimp-data-extras.metainfo.xml
+usr/share/locale/gl/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/gl/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/gl/LC_MESSAGES/gimp20.mo
+usr/share/locale/gl/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/gl/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/gl/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/cs/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/cs/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/cs/LC_MESSAGES/gimp20.mo
+usr/share/locale/cs/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/cs/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/cs/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/de/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/de/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/de/LC_MESSAGES/gimp20.mo
+usr/share/locale/de/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/de/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/de/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/gd/LC_MESSAGES/gimp20.mo
+usr/share/locale/az/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/az/LC_MESSAGES/gimp20.mo
+usr/share/locale/az/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/az/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/csb/LC_MESSAGES/gimp20.mo
+usr/share/locale/fa/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/fa/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/fa/LC_MESSAGES/gimp20.mo
+usr/share/locale/fa/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/fa/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/fa/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/ko/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/ko/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/ko/LC_MESSAGES/gimp20.mo
+usr/share/locale/ko/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/ko/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/ko/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/fr/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/fr/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/fr/LC_MESSAGES/gimp20.mo
+usr/share/locale/fr/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/fr/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/fr/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/lv/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/lv/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/lv/LC_MESSAGES/gimp20.mo
+usr/share/locale/lv/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/lv/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/lv/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/ar/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/ar/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/ar/LC_MESSAGES/gimp20.mo
+usr/share/locale/ar/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/ar/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/ar/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/ml/LC_MESSAGES/gimp20.mo
+usr/share/locale/mr/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/mr/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/mr/LC_MESSAGES/gimp20.mo
+usr/share/locale/mr/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/mr/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/mr/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/hu/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/hu/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/hu/LC_MESSAGES/gimp20.mo
+usr/share/locale/hu/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/hu/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/hu/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/br/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/br/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/br/LC_MESSAGES/gimp20.mo
+usr/share/locale/br/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/br/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/br/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/tt/LC_MESSAGES/gimp20.mo
+usr/share/locale/et/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/et/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/et/LC_MESSAGES/gimp20.mo
+usr/share/locale/et/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/et/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/et/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/lt/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/lt/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/lt/LC_MESSAGES/gimp20.mo
+usr/share/locale/lt/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/lt/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/lt/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/ms/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/ms/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/ms/LC_MESSAGES/gimp20.mo
+usr/share/locale/ms/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/ms/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/ms/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/pt/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/pt/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/pt/LC_MESSAGES/gimp20.mo
+usr/share/locale/pt/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/pt/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/pt/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/si/LC_MESSAGES/gimp20.mo
+usr/share/locale/zh_TW/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/zh_TW/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/zh_TW/LC_MESSAGES/gimp20.mo
+usr/share/locale/zh_TW/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/zh_TW/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/zh_TW/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/pa/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/pa/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/pa/LC_MESSAGES/gimp20.mo
+usr/share/locale/pa/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/pa/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/pa/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/en_CA/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/en_CA/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/en_CA/LC_MESSAGES/gimp20.mo
+usr/share/locale/en_CA/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/en_CA/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/en_CA/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/he/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/he/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/he/LC_MESSAGES/gimp20.mo
+usr/share/locale/he/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/he/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/nds/LC_MESSAGES/gimp20.mo
+usr/share/locale/be/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/be/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/be/LC_MESSAGES/gimp20.mo
+usr/share/locale/be/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/be/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/be/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/da/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/da/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/da/LC_MESSAGES/gimp20.mo
+usr/share/locale/da/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/da/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/da/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/ne/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/ne/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/ne/LC_MESSAGES/gimp20.mo
+usr/share/locale/ne/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/ne/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/ne/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/nn/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/nn/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/nn/LC_MESSAGES/gimp20.mo
+usr/share/locale/nn/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/nn/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/nn/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/km/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/km/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/km/LC_MESSAGES/gimp20.mo
+usr/share/locale/km/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/km/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/km/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/ru/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/ru/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/ru/LC_MESSAGES/gimp20.mo
+usr/share/locale/ru/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/ru/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/ru/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/te/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/te/LC_MESSAGES/gimp20.mo
+usr/share/locale/te/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/te/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/en_GB/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/en_GB/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/en_GB/LC_MESSAGES/gimp20.mo
+usr/share/locale/en_GB/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/en_GB/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/en_GB/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/sl/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/sl/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/sl/LC_MESSAGES/gimp20.mo
+usr/share/locale/sl/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/sl/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/sl/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/hi/LC_MESSAGES/gimp20.mo
+usr/share/locale/ta/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/ta/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/ta/LC_MESSAGES/gimp20.mo
+usr/share/locale/ta/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/ta/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/am/LC_MESSAGES/gimp20.mo
+usr/share/locale/sv/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/sv/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/sv/LC_MESSAGES/gimp20.mo
+usr/share/locale/sv/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/sv/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/sv/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/tr/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/tr/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/tr/LC_MESSAGES/gimp20.mo
+usr/share/locale/tr/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/tr/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/tr/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/ja/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/ja/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/ja/LC_MESSAGES/gimp20.mo
+usr/share/locale/ja/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/ja/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/ja/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/el/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/el/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/el/LC_MESSAGES/gimp20.mo
+usr/share/locale/el/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/el/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/el/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/th/LC_MESSAGES/gimp20.mo
+usr/share/locale/hr/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/hr/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/hr/LC_MESSAGES/gimp20.mo
+usr/share/locale/hr/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/hr/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/hr/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/ast/LC_MESSAGES/gimp20.mo
+usr/share/locale/bg/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/bg/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/bg/LC_MESSAGES/gimp20.mo
+usr/share/locale/bg/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/bg/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/bg/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/ca/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/ca/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/ca/LC_MESSAGES/gimp20.mo
+usr/share/locale/ca/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/ca/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/ca/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/rw/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/rw/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/rw/LC_MESSAGES/gimp20.mo
+usr/share/locale/rw/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/rw/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/rw/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/eo/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/eo/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/eo/LC_MESSAGES/gimp20.mo
+usr/share/locale/eo/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/eo/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/eo/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/sk/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/sk/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/sk/LC_MESSAGES/gimp20.mo
+usr/share/locale/sk/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/sk/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/sk/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/sr@latin/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/sr@latin/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/sr@latin/LC_MESSAGES/gimp20.mo
+usr/share/locale/sr@latin/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/sr@latin/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/sr@latin/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/gu/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/gu/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/gu/LC_MESSAGES/gimp20.mo
+usr/share/locale/gu/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/gu/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/gu/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/nb/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/nb/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/nb/LC_MESSAGES/gimp20.mo
+usr/share/locale/nb/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/nb/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/nb/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/fi/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/fi/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/fi/LC_MESSAGES/gimp20.mo
+usr/share/locale/fi/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/fi/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/fi/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/kk/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/kk/LC_MESSAGES/gimp20.mo
+usr/share/locale/eu/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/eu/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/eu/LC_MESSAGES/gimp20.mo
+usr/share/locale/eu/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/eu/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/eu/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/ky/LC_MESSAGES/gimp20.mo
+usr/share/locale/ro/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/ro/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/ro/LC_MESSAGES/gimp20.mo
+usr/share/locale/ro/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/ro/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/ro/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/es/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/es/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/es/LC_MESSAGES/gimp20.mo
+usr/share/locale/es/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/es/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/es/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/uk/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/uk/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/uk/LC_MESSAGES/gimp20.mo
+usr/share/locale/uk/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/uk/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/uk/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/ka/LC_MESSAGES/gimp20.mo
+usr/share/locale/pt_BR/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/pt_BR/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/pt_BR/LC_MESSAGES/gimp20.mo
+usr/share/locale/pt_BR/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/pt_BR/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/pt_BR/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/zh_CN/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/zh_CN/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/zh_CN/LC_MESSAGES/gimp20.mo
+usr/share/locale/zh_CN/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/zh_CN/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/zh_CN/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/nl/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/nl/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/nl/LC_MESSAGES/gimp20.mo
+usr/share/locale/nl/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/nl/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/nl/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/yi/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/yi/LC_MESSAGES/gimp20.mo
+usr/share/locale/yi/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/yi/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/id/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/id/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/id/LC_MESSAGES/gimp20.mo
+usr/share/locale/id/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/id/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/id/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/my/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/my/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/my/LC_MESSAGES/gimp20.mo
+usr/share/locale/my/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/my/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/my/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/zh_HK/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/zh_HK/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/zh_HK/LC_MESSAGES/gimp20.mo
+usr/share/locale/zh_HK/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/zh_HK/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/zh_HK/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/xh/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/xh/LC_MESSAGES/gimp20.mo
+usr/share/locale/xh/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/xh/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/xh/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/ga/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/ga/LC_MESSAGES/gimp20.mo
+usr/share/locale/ga/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/ga/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/ga/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/bs/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/bs/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/bs/LC_MESSAGES/gimp20.mo
+usr/share/locale/bs/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/bs/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/bs/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/dz/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/dz/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/dz/LC_MESSAGES/gimp20.mo
+usr/share/locale/dz/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/dz/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/dz/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/ca@valencia/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/ca@valencia/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/ca@valencia/LC_MESSAGES/gimp20.mo
+usr/share/locale/ca@valencia/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/ca@valencia/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/ca@valencia/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/oc/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/oc/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/oc/LC_MESSAGES/gimp20.mo
+usr/share/locale/oc/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/oc/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/oc/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/it/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/it/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/it/LC_MESSAGES/gimp20.mo
+usr/share/locale/it/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/it/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/it/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/sr/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/sr/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/sr/LC_MESSAGES/gimp20.mo
+usr/share/locale/sr/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/sr/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/sr/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/kn/LC_MESSAGES/gimp20.mo
+usr/share/locale/kn/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/vi/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/vi/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/vi/LC_MESSAGES/gimp20.mo
+usr/share/locale/vi/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/vi/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/vi/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/pl/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/pl/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/pl/LC_MESSAGES/gimp20.mo
+usr/share/locale/pl/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/pl/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/pl/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/is/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/is/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/is/LC_MESSAGES/gimp20.mo
+usr/share/locale/is/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/is/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/is/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/locale/mk/LC_MESSAGES/gimp20-libgimp.mo
+usr/share/locale/mk/LC_MESSAGES/gimp20-tips.mo
+usr/share/locale/mk/LC_MESSAGES/gimp20.mo
+usr/share/locale/mk/LC_MESSAGES/gimp20-std-plug-ins.mo
+usr/share/locale/mk/LC_MESSAGES/gimp20-python.mo
+usr/share/locale/mk/LC_MESSAGES/gimp20-script-fu.mo
+usr/share/gimp/*
+usr/share/applications/gimp.desktop
+usr/share/gtk-doc/html/libgimpmath/left-insensitive.png
+usr/share/gtk-doc/html/libgimpmath/libgimpmath-GimpMD5.html
+usr/share/gtk-doc/html/libgimpmath/style.css
+usr/share/gtk-doc/html/libgimpmath/right.png
+usr/share/gtk-doc/html/libgimpmath/up-insensitive.png
+usr/share/gtk-doc/html/libgimpmath/right-insensitive.png
+usr/share/gtk-doc/html/libgimpmath/up.png
+usr/share/gtk-doc/html/libgimpmath/left.png
+usr/share/gtk-doc/html/libgimpmath/pt01.html
+usr/share/gtk-doc/html/libgimpmath/libgimpmath-GimpMatrix.html
+usr/share/gtk-doc/html/libgimpmath/home.png
+usr/share/gtk-doc/html/libgimpmath/libgimpmath-GimpMath.html
+usr/share/gtk-doc/html/libgimpmath/api-index-2-10.html
+usr/share/gtk-doc/html/libgimpmath/api-index-full.html
+usr/share/gtk-doc/html/libgimpmath/api-index-2-4.html
+usr/share/gtk-doc/html/libgimpmath/libgimpmath-GimpVector.html
+usr/share/gtk-doc/html/libgimpmath/api-index-deprecated.html
+usr/share/gtk-doc/html/libgimpmath/api-index-2-8.html
+usr/share/gtk-doc/html/libgimpmath/libgimpmath.devhelp2
+usr/share/gtk-doc/html/libgimpmath/index.html
+usr/share/gtk-doc/html/libgimp/*
+usr/share/gtk-doc/html/libgimpwidgets/left-insensitive.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpEnumLabel.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-selection-add.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-session.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-quick-mask-on.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-colorize.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-path.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-shear.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-gravity-south.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-histogram-logarithmic.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-floating-selection.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpColorDisplayStack.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-flip.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-landscape.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpColorDisplay.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-dynamics.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-exposure.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-image-windows-snapping.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-selection-all.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-wilber-eek.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-folders-brushes.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-folders-palettes.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-reshow-filter.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-hfill.png
+usr/share/gtk-doc/html/libgimpwidgets/libgimpwidgets-GimpHelpUI.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-visible.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-layer-mask.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-curve-smooth.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-gradient-conical-asymmetric.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-paths.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-histogram.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-texture.png
+usr/share/gtk-doc/html/libgimpwidgets/libgimpwidgets-colordisplay.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-rotate-180.png
+usr/share/gtk-doc/html/libgimpwidgets/libgimpwidgets-GimpWidgetsUtils.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-airbrush.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-layers.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpColorArea.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-unified-transform.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-blur.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-playground.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-folders-gradients.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-layer-to-imagesize.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-detach.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-default-colors.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-text-dir-ttb-ltr.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-group-layer.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-gravity-south-east.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-anchor.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpSizeEntry.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-video.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpController.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-smudge.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-gradient-shapeburst-angular.png
+usr/share/gtk-doc/html/libgimpwidgets/libgimpwidgets-gallery.html
+usr/share/gtk-doc/html/libgimpwidgets/GimpColorHexEntry.html
+usr/share/gtk-doc/html/libgimpwidgets/GimpColorProfileView.html
+usr/share/gtk-doc/html/libgimpwidgets/style.css
+usr/share/gtk-doc/html/libgimpwidgets/GimpNumberPairEntry.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-image.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-join-bevel.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-folders-scripts.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-color-button.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-seamless-clone.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpOffsetArea.html
+usr/share/gtk-doc/html/libgimpwidgets/libgimpwidgets-GimpWidgets.html
+usr/share/gtk-doc/html/libgimpwidgets/GimpColorProfileChooserDialog.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-selection-intersect.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-path.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-char-picker.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-levels.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpFrame.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-folders-fonts.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-merge-down.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-rotate.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpColorProfileStore.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-center.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-measure.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-folders-tools.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-paste-as-new.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-channel-green.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-display-filter-lcms.png
+usr/share/gtk-doc/html/libgimpwidgets/api-index-2-2.html
+usr/share/gtk-doc/html/libgimpwidgets/right.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-gradient.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-brightness-contrast.png
+usr/share/gtk-doc/html/libgimpwidgets/libgimpwidgets-utils.html
+usr/share/gtk-doc/html/libgimpwidgets/GimpBrowser.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-info.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-import-export.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpZoomModel.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-new-image.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-gradient-square.png
+usr/share/gtk-doc/html/libgimpwidgets/libgimpwidgets-widgets.html
+usr/share/gtk-doc/html/libgimpwidgets/libgimpwidgets-GimpHintBox.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-preset.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-controller.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpColorScale.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-pencil.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-text-dir-ttb-rtl.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-image-windows.png
+usr/share/gtk-doc/html/libgimpwidgets/libgimpwidgets-colorselector.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-folders-environ.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-controller-midi.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-close.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-mypaint-brush.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-selection-stroke.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-hchain.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-channel.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-menu-left.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-color-space-linear.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-image-windows-appearance.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-posterize.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-scale.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-file-manager.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-question.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpCellRendererToggle.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-flip-horizontal.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-text-dir-ttb-rtl-upright.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-channel-alpha.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpIntComboBox.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-smartphone.png
+usr/share/gtk-doc/html/libgimpwidgets/up-insensitive.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-move-to-screen.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-reset.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpEnumStore.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-display-filter-proof.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-display-filter-gamma.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-convert-rgb.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-vchain.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-business-card.png
+usr/share/gtk-doc/html/libgimpwidgets/right-insensitive.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-vchain-broken.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-channel-red.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-color-space-perceptual.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-perspective-clone.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-folders.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-text-layer.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpColorSelect.html
+usr/share/gtk-doc/html/libgimpwidgets/libgimpwidgets-hierarchy.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-number-pair-entry.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpUnitComboBox.html
+usr/share/gtk-doc/html/libgimpwidgets/GimpMemsizeEntry.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-color-scale.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-curve-free.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpChainButton.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-invert.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-interface.png
+usr/share/gtk-doc/html/libgimpwidgets/libgimpwidgets-GimpOldWidgets.html
+usr/share/gtk-doc/html/libgimpwidgets/api-index-2-10-4.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-wilber.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-convert-indexed.png
+usr/share/gtk-doc/html/libgimpwidgets/libgimpwidgets-cell-renderers.html
+usr/share/gtk-doc/html/libgimpwidgets/up.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-gradient-linear.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-iscissors.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-bucket-fill.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpColorNotebook.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-duplicate.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-enum-label.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-window-management.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-default-grid.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-color-pick-from-screen.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-zoom.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpColorSelection.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-resize.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-help-system.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-gradient-spiral-clockwise.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-flip-vertical.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-int-combo-box.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-rect-select.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-heal.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-controller-wheel.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-warp.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpPageSelector.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-color-space-non-linear.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-frame.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-color-picker-black.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-shape-circle.png
+usr/share/gtk-doc/html/libgimpwidgets/libgimpwidgets-GimpEnumWidgets.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-color-balance.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-vfill.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-error.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpPreview.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-symmetry.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-gradient-shapeburst-dimpled.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpUnitMenu.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-rotate-90.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-letter-spacing.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpPreviewArea.html
+usr/share/gtk-doc/html/libgimpwidgets/GimpPixmap.html
+usr/share/gtk-doc/html/libgimpwidgets/GimpFileEntry.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-dashboard.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-display.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-color-management.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-fuzzy-select.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-perspective.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-close-all.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-vcenter.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-plugin.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-color-triangle.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-image-reload.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-wilber-outline.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpColorButton.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-path-stroke.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpDialog.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-gradient-spiral-anticlockwise.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-display-filter-colorblind.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpPathEditor.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-join-round.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-folders-modules.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-selection.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-color-selection.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-sample-point.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpButton.html
+usr/share/gtk-doc/html/libgimpwidgets/left.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-grid.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-display-filter.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-paintbrush.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-dodge.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tools.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-default-comment.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-folders-plug-ins.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-page-selector.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-text.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-layer.png
+usr/share/gtk-doc/html/libgimpwidgets/libgimpwidgets.devhelp2
+usr/share/gtk-doc/html/libgimpwidgets/gimp-cap-square.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpCellRendererColor.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-selection-shrink.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-color-water.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-cap-butt.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-toolbox.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-user-manual.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-path-editor.png
+usr/share/gtk-doc/html/libgimpwidgets/libgimpwidgets-GimpIcons.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-theme.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpUnitStore.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-shred.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-folders-themes.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-color-picker.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-string-combo-box.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-hue-saturation.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-gradient-shapeburst-spherical.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-channel-blue.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-scale.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-color-cmyk.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-toilet-paper.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-display.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpStringComboBox.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-undo-history.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-navigation.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-controller-keyboard.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-eraser.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-threshold.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-color-area.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-input-device.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-selection-replace.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-gravity-north-west.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-curves.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-chain-button.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-join-miter.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-quick-mask-off.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-tool-options.png
+usr/share/gtk-doc/html/libgimpwidgets/libgimpwidgets-controller.html
+usr/share/gtk-doc/html/libgimpwidgets/home.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-controllers.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-button.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-shape-square.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-color-hex-entry.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpColorScales.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-browser.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-convert-grayscale.png
+usr/share/gtk-doc/html/libgimpwidgets/api-index-2-10.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-dialog.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-text-dir-ttb-ltr-upright.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-channels.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-cap-round.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-input-devices.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-portrait.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-enum-combo-box.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-gravity-north-east.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-folders-icon-themes.png
+usr/share/gtk-doc/html/libgimpwidgets/api-index-full.html
+usr/share/gtk-doc/html/libgimpwidgets/libgimpwidgets-GimpQueryBox.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-gravity-north.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-folders-dynamics.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-color-temperature.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpEnumComboBox.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-warning.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-paste-into.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-gravity-east.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-shape-diamond.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-file-entry.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-image-title.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-desaturate.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-color-picker-gray.png
+usr/share/gtk-doc/html/libgimpwidgets/api-index-2-4.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-ink.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-crop.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-folders-tool-presets.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-color-profile-combo-box.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-icon-theme.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-gravity-west.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-template.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-options.png
+usr/share/gtk-doc/html/libgimpwidgets/api-index-2-6.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-foreground-select.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-hcenter.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-preview-area.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-folders-patterns.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-system-resources.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpColorProfileComboBox.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-move.png
+usr/share/gtk-doc/html/libgimpwidgets/libgimpwidgets-GimpPropWidgets.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-image-open.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-offset-area.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-web.png
+usr/share/gtk-doc/html/libgimpwidgets/api-index-deprecated.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-device-status.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-zoom-follow-window.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-selection-subtract.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-images.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-controller-linux-input.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-transparency.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-display-filter-contrast.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-n-point-deformation.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-hint-box.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-align.png
+usr/share/gtk-doc/html/libgimpwidgets/api-index-2-8.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-selection-none.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-menu-right.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-folders-mypaint-brushes.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-line-spacing.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-gravity-south-west.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-handle-transform.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-text-dir-rtl.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-attach.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-colormap.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-pick-button.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-text-dir-ltr.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpRuler.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-selection-to-path.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-selection-grow.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-swap-colors.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-ellipse-select.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-frame.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-clipboard.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-selection-border.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpPickButton.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-rotate-270.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpColorSelector.html
+usr/share/gtk-doc/html/libgimpwidgets/GimpScrolledPreview.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-channel-indexed.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-folders-tool-plug-ins.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-cursor.png
+usr/share/gtk-doc/html/libgimpwidgets/GimpIntStore.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-selection-to-channel.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-gradient-radial.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-list.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-display-filter-clip-warning.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-gradient-conical-symmetric.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-prefs-folders-interp.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-channel-gray.png
+usr/share/gtk-doc/html/libgimpwidgets/libgimpwidgets-GimpCairoUtils.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-free-select.png
+usr/share/gtk-doc/html/libgimpwidgets/index.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-color-picker-white.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-hchain-broken.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-shadows-highlights.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-unit-menu.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-linked.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-gegl.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-clone.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-cage.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-tool-by-color-select.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-histogram-linear.png
+usr/share/gtk-doc/html/libgimpwidgets/libgimpwidgets-deprecated.html
+usr/share/gtk-doc/html/libgimpwidgets/gimp-gradient-bilinear.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-pattern.png
+usr/share/gtk-doc/html/libgimpwidgets/gimp-widget-memsize-entry.png
+usr/share/gtk-doc/html/libgimpcolor/left-insensitive.png
+usr/share/gtk-doc/html/libgimpcolor/libgimpcolor-GimpColorManaged.html
+usr/share/gtk-doc/html/libgimpcolor/libgimpcolor-GimpRGB.html
+usr/share/gtk-doc/html/libgimpcolor/libgimpcolor-GimpColorTransform.html
+usr/share/gtk-doc/html/libgimpcolor/libgimpcolor-GimpHSV.html
+usr/share/gtk-doc/html/libgimpcolor/style.css
+usr/share/gtk-doc/html/libgimpcolor/libgimpcolor-GimpColorProfile.html
+usr/share/gtk-doc/html/libgimpcolor/api-index-2-2.html
+usr/share/gtk-doc/html/libgimpcolor/right.png
+usr/share/gtk-doc/html/libgimpcolor/up-insensitive.png
+usr/share/gtk-doc/html/libgimpcolor/right-insensitive.png
+usr/share/gtk-doc/html/libgimpcolor/libgimpcolor-GimpCMYK.html
+usr/share/gtk-doc/html/libgimpcolor/libgimpcolor-GimpAdaptiveSupersample.html
+usr/share/gtk-doc/html/libgimpcolor/up.png
+usr/share/gtk-doc/html/libgimpcolor/left.png
+usr/share/gtk-doc/html/libgimpcolor/pt01.html
+usr/share/gtk-doc/html/libgimpcolor/libgimpcolor.devhelp2
+usr/share/gtk-doc/html/libgimpcolor/libgimpcolor-GimpColorSpace.html
+usr/share/gtk-doc/html/libgimpcolor/libgimpcolor-GimpCairo.html
+usr/share/gtk-doc/html/libgimpcolor/home.png
+usr/share/gtk-doc/html/libgimpcolor/api-index-2-10.html
+usr/share/gtk-doc/html/libgimpcolor/api-index-full.html
+usr/share/gtk-doc/html/libgimpcolor/api-index-2-4.html
+usr/share/gtk-doc/html/libgimpcolor/libgimpcolor-GimpPixbuf.html
+usr/share/gtk-doc/html/libgimpcolor/api-index-2-6.html
+usr/share/gtk-doc/html/libgimpcolor/api-index-deprecated.html
+usr/share/gtk-doc/html/libgimpcolor/api-index-2-8.html
+usr/share/gtk-doc/html/libgimpcolor/libgimpcolor-GimpBilinear.html
+usr/share/gtk-doc/html/libgimpcolor/index.html
+usr/share/gtk-doc/html/libgimpbase/left-insensitive.png
+usr/share/gtk-doc/html/libgimpbase/libgimpbase-gimpparasiteio.html
+usr/share/gtk-doc/html/libgimpbase/libgimpbase-gimprectangle.html
+usr/share/gtk-doc/html/libgimpbase/libgimpbase-gimpchecks.html
+usr/share/gtk-doc/html/libgimpbase/style.css
+usr/share/gtk-doc/html/libgimpbase/libgimpbase-GimpValueArray.html
+usr/share/gtk-doc/html/libgimpbase/api-index-2-2.html
+usr/share/gtk-doc/html/libgimpbase/right.png
+usr/share/gtk-doc/html/libgimpbase/libgimpbase-gimpsignal.html
+usr/share/gtk-doc/html/libgimpbase/libgimpbase.devhelp2
+usr/share/gtk-doc/html/libgimpbase/up-insensitive.png
+usr/share/gtk-doc/html/libgimpbase/right-insensitive.png
+usr/share/gtk-doc/html/libgimpbase/up.png
+usr/share/gtk-doc/html/libgimpbase/libgimpbase-gimpparasite.html
+usr/share/gtk-doc/html/libgimpbase/libgimpbase-gimpunit.html
+usr/share/gtk-doc/html/libgimpbase/libgimpbase-gimpbasetypes.html
+usr/share/gtk-doc/html/libgimpbase/libgimpbase-gimpparam.html
+usr/share/gtk-doc/html/libgimpbase/libgimpbase-gimpmemsize.html
+usr/share/gtk-doc/html/libgimpbase/libgimpbase-gimpversion.html
+usr/share/gtk-doc/html/libgimpbase/left.png
+usr/share/gtk-doc/html/libgimpbase/libgimpbase-gimpbaseenums.html
+usr/share/gtk-doc/html/libgimpbase/pt01.html
+usr/share/gtk-doc/html/libgimpbase/libgimpbase-gimpenv.html
+usr/share/gtk-doc/html/libgimpbase/libgimpbase-gimpmetadata.html
+usr/share/gtk-doc/html/libgimpbase/libgimpbase-gimplimits.html
+usr/share/gtk-doc/html/libgimpbase/libgimpbase-gimpcpuaccel.html
+usr/share/gtk-doc/html/libgimpbase/home.png
+usr/share/gtk-doc/html/libgimpbase/libgimpbase-gimputils.html
+usr/share/gtk-doc/html/libgimpbase/api-index-2-10.html
+usr/share/gtk-doc/html/libgimpbase/api-index-full.html
+usr/share/gtk-doc/html/libgimpbase/api-index-2-4.html
+usr/share/gtk-doc/html/libgimpbase/libgimpbase-gimpdatafiles.html
+usr/share/gtk-doc/html/libgimpbase/api-index-deprecated.html
+usr/share/gtk-doc/html/libgimpbase/api-index-2-8.html
+usr/share/gtk-doc/html/libgimpbase/index.html
+usr/share/gtk-doc/html/libgimpthumb/left-insensitive.png
+usr/share/gtk-doc/html/libgimpthumb/style.css
+usr/share/gtk-doc/html/libgimpthumb/api-index-2-2.html
+usr/share/gtk-doc/html/libgimpthumb/right.png
+usr/share/gtk-doc/html/libgimpthumb/up-insensitive.png
+usr/share/gtk-doc/html/libgimpthumb/right-insensitive.png
+usr/share/gtk-doc/html/libgimpthumb/libgimpthumb-GimpThumb-enums.html
+usr/share/gtk-doc/html/libgimpthumb/up.png
+usr/share/gtk-doc/html/libgimpthumb/left.png
+usr/share/gtk-doc/html/libgimpthumb/pt01.html
+usr/share/gtk-doc/html/libgimpthumb/GimpThumbnail.html
+usr/share/gtk-doc/html/libgimpthumb/home.png
+usr/share/gtk-doc/html/libgimpthumb/api-index-2-10.html
+usr/share/gtk-doc/html/libgimpthumb/api-index-full.html
+usr/share/gtk-doc/html/libgimpthumb/libgimpthumb-GimpThumb-error.html
+usr/share/gtk-doc/html/libgimpthumb/libgimpthumb-GimpThumb-utils.html
+usr/share/gtk-doc/html/libgimpthumb/api-index-deprecated.html
+usr/share/gtk-doc/html/libgimpthumb/libgimpthumb.devhelp2
+usr/share/gtk-doc/html/libgimpthumb/index.html
+usr/share/gtk-doc/html/libgimpmodule/left-insensitive.png
+usr/share/gtk-doc/html/libgimpmodule/GimpModule.html
+usr/share/gtk-doc/html/libgimpmodule/style.css
+usr/share/gtk-doc/html/libgimpmodule/right.png
+usr/share/gtk-doc/html/libgimpmodule/up-insensitive.png
+usr/share/gtk-doc/html/libgimpmodule/right-insensitive.png
+usr/share/gtk-doc/html/libgimpmodule/up.png
+usr/share/gtk-doc/html/libgimpmodule/left.png
+usr/share/gtk-doc/html/libgimpmodule/pt01.html
+usr/share/gtk-doc/html/libgimpmodule/home.png
+usr/share/gtk-doc/html/libgimpmodule/api-index-2-10.html
+usr/share/gtk-doc/html/libgimpmodule/api-index-full.html
+usr/share/gtk-doc/html/libgimpmodule/libgimpmodule.devhelp2
+usr/share/gtk-doc/html/libgimpmodule/api-index-deprecated.html
+usr/share/gtk-doc/html/libgimpmodule/api-index-2-8.html
+usr/share/gtk-doc/html/libgimpmodule/index.html
+usr/share/gtk-doc/html/libgimpmodule/GimpModuleDB.html
+usr/share/gtk-doc/html/libgimpconfig/left-insensitive.png
+usr/share/gtk-doc/html/libgimpconfig/libgimpconfig-GimpConfigError.html
+usr/share/gtk-doc/html/libgimpconfig/style.css
+usr/share/gtk-doc/html/libgimpconfig/libgimpconfig-GimpConfig-utils.html
+usr/share/gtk-doc/html/libgimpconfig/libgimpconfig-GimpConfig-params.html
+usr/share/gtk-doc/html/libgimpconfig/right.png
+usr/share/gtk-doc/html/libgimpconfig/GimpColorConfig.html
+usr/share/gtk-doc/html/libgimpconfig/libgimpconfig-GimpConfigWriter.html
+usr/share/gtk-doc/html/libgimpconfig/up-insensitive.png
+usr/share/gtk-doc/html/libgimpconfig/right-insensitive.png
+usr/share/gtk-doc/html/libgimpconfig/libgimpconfig-GimpConfig.html
+usr/share/gtk-doc/html/libgimpconfig/up.png
+usr/share/gtk-doc/html/libgimpconfig/libgimpconfig-GimpConfig-path.html
+usr/share/gtk-doc/html/libgimpconfig/left.png
+usr/share/gtk-doc/html/libgimpconfig/pt01.html
+usr/share/gtk-doc/html/libgimpconfig/libgimpconfig-GimpScanner.html
+usr/share/gtk-doc/html/libgimpconfig/home.png
+usr/share/gtk-doc/html/libgimpconfig/libgimpconfig-GimpConfig-serialize.html
+usr/share/gtk-doc/html/libgimpconfig/api-index-2-10.html
+usr/share/gtk-doc/html/libgimpconfig/api-index-full.html
+usr/share/gtk-doc/html/libgimpconfig/api-index-2-4.html
+usr/share/gtk-doc/html/libgimpconfig/api-index-2-6.html
+usr/share/gtk-doc/html/libgimpconfig/api-index-deprecated.html
+usr/share/gtk-doc/html/libgimpconfig/api-index-2-8.html
+usr/share/gtk-doc/html/libgimpconfig/libgimpconfig.devhelp2
+usr/share/gtk-doc/html/libgimpconfig/libgimpconfig-GimpConfig-deserialize.html
+usr/share/gtk-doc/html/libgimpconfig/index.html
+usr/share/gtk-doc/html/libgimpconfig/libgimpconfig-hierarchy.html
+usr/share/aclocal/gimp-2.0.m4
+usr/lib/libgimpwidgets-2.0.la
+usr/lib/libgimpwidgets-2.0.so.0
+usr/lib/libgimpmath-2.0.so
+usr/lib/libgimpconfig-2.0.so
+usr/lib/libgimpui-2.0.la
+usr/lib/libgimpbase-2.0.so
+usr/lib/libgimpwidgets-2.0.so.0.1000.6
+usr/lib/libgimpui-2.0.so.0
+usr/lib/libgimpwidgets-2.0.so
+usr/lib/libgimpcolor-2.0.so
+usr/lib/libgimpmodule-2.0.la
+usr/lib/libgimpconfig-2.0.so.0
+usr/lib/libgimpmath-2.0.so.0.1000.6
+usr/lib/libgimpbase-2.0.so.0
+usr/lib/libgimpmodule-2.0.so
+usr/lib/libgimp-2.0.so
+usr/lib/libgimpthumb-2.0.so
+usr/lib/libgimpcolor-2.0.so.0.1000.6
+usr/lib/libgimpthumb-2.0.la
+usr/lib/libgimpmodule-2.0.so.0
+usr/lib/gimp/*
+usr/lib/libgimp-2.0.so.0.1000.6
+usr/lib/libgimpui-2.0.so
+usr/lib/libgimpcolor-2.0.la
+usr/lib/libgimpbase-2.0.so.0.1000.6
+usr/lib/libgimpthumb-2.0.so.0.1000.6
+usr/lib/libgimpui-2.0.so.0.1000.6
+usr/lib/libgimpthumb-2.0.so.0
+usr/lib/libgimp-2.0.la
+usr/lib/libgimpmodule-2.0.so.0.1000.6
+usr/lib/libgimpbase-2.0.la
+usr/lib/libgimpcolor-2.0.so.0
+usr/lib/libgimpmath-2.0.la
+usr/lib/libgimpconfig-2.0.la
+usr/lib/libgimp-2.0.so.0
+usr/lib/pkgconfig/gimp-2.0.pc
+usr/lib/pkgconfig/gimpui-2.0.pc
+usr/lib/pkgconfig/gimpthumb-2.0.pc
+usr/lib/libgimpmath-2.0.so.0
+usr/lib/libgimpconfig-2.0.so.0.1000.6
+usr/libexec/gimp-debug-tool-2.0
+usr/include/gimp-2.0/*
+usr/bin/gimp-2.10
+usr/bin/gimp-console
+usr/bin/gimp-console-2.10
+usr/bin/gimp-test-clipboard-2.0
+usr/bin/gimp
+usr/bin/gimptool-2.0
+etc/gimp/*
+EOF
+
+cat >> vlc.exclude << EOF
+usr/share/icons/hicolor/256x256/apps/vlc.png
+usr/share/icons/hicolor/32x32/apps/vlc-xmas.xpm
+usr/share/icons/hicolor/32x32/apps/vlc.png
+usr/share/icons/hicolor/32x32/apps/vlc.xpm
+usr/share/icons/hicolor/128x128/apps/vlc.png
+usr/share/icons/hicolor/128x128/apps/vlc-xmas.png
+usr/share/icons/hicolor/128x128/apps/vlc-kb.png
+usr/share/icons/hicolor/16x16/apps/vlc.png
+usr/share/icons/hicolor/16x16/apps/vlc.xpm
+usr/share/icons/hicolor/48x48/apps/vlc.png
+usr/share/icons/hicolor/48x48/apps/vlc-xmas.png
+usr/share/vlc/*
+usr/share/man/man1/vlc-wrapper.1
+usr/share/man/man1/vlc.1
+usr/share/metainfo/vlc.appdata.xml
+usr/share/locale/gl/LC_MESSAGES/vlc.mo
+usr/share/locale/cs/LC_MESSAGES/vlc.mo
+usr/share/locale/de/LC_MESSAGES/vlc.mo
+usr/share/locale/gd/LC_MESSAGES/vlc.mo
+usr/share/locale/az/LC_MESSAGES/vlc.mo
+usr/share/locale/fa/LC_MESSAGES/vlc.mo
+usr/share/locale/ko/LC_MESSAGES/vlc.mo
+usr/share/locale/fr/LC_MESSAGES/vlc.mo
+usr/share/locale/lv/LC_MESSAGES/vlc.mo
+usr/share/locale/ar/LC_MESSAGES/vlc.mo
+usr/share/locale/tl/LC_MESSAGES/vlc.mo
+usr/share/locale/ml/LC_MESSAGES/vlc.mo
+usr/share/locale/mr/LC_MESSAGES/vlc.mo
+usr/share/locale/or/LC_MESSAGES/vlc.mo
+usr/share/locale/hu/LC_MESSAGES/vlc.mo
+usr/share/locale/br/LC_MESSAGES/vlc.mo
+usr/share/locale/et/LC_MESSAGES/vlc.mo
+usr/share/locale/lt/LC_MESSAGES/vlc.mo
+usr/share/locale/ms/LC_MESSAGES/vlc.mo
+usr/share/locale/bn/LC_MESSAGES/vlc.mo
+usr/share/locale/si/LC_MESSAGES/vlc.mo
+usr/share/locale/zh_TW/LC_MESSAGES/vlc.mo
+usr/share/locale/pa/LC_MESSAGES/vlc.mo
+usr/share/locale/ach/LC_MESSAGES/vlc.mo
+usr/share/locale/mai/LC_MESSAGES/vlc.mo
+usr/share/locale/he/LC_MESSAGES/vlc.mo
+usr/share/locale/co/LC_MESSAGES/vlc.mo
+usr/share/locale/ckb/LC_MESSAGES/vlc.mo
+usr/share/locale/as_IN/LC_MESSAGES/vlc.mo
+usr/share/locale/be/LC_MESSAGES/vlc.mo
+usr/share/locale/da/LC_MESSAGES/vlc.mo
+usr/share/locale/ne/LC_MESSAGES/vlc.mo
+usr/share/locale/fy/LC_MESSAGES/vlc.mo
+usr/share/locale/nn/LC_MESSAGES/vlc.mo
+usr/share/locale/km/LC_MESSAGES/vlc.mo
+usr/share/locale/ru/LC_MESSAGES/vlc.mo
+usr/share/locale/te/LC_MESSAGES/vlc.mo
+usr/share/locale/ug/LC_MESSAGES/vlc.mo
+usr/share/locale/en_GB/LC_MESSAGES/vlc.mo
+usr/share/locale/hy/LC_MESSAGES/vlc.mo
+usr/share/locale/sl/LC_MESSAGES/vlc.mo
+usr/share/locale/sq/LC_MESSAGES/vlc.mo
+usr/share/locale/hi/LC_MESSAGES/vlc.mo
+usr/share/locale/ta/LC_MESSAGES/vlc.mo
+usr/share/locale/cy/LC_MESSAGES/vlc.mo
+usr/share/locale/am/LC_MESSAGES/vlc.mo
+usr/share/locale/sv/LC_MESSAGES/vlc.mo
+usr/share/locale/tr/LC_MESSAGES/vlc.mo
+usr/share/locale/ja/LC_MESSAGES/vlc.mo
+usr/share/locale/el/LC_MESSAGES/vlc.mo
+usr/share/locale/th/LC_MESSAGES/vlc.mo
+usr/share/locale/hr/LC_MESSAGES/vlc.mo
+usr/share/locale/ast/LC_MESSAGES/vlc.mo
+usr/share/locale/lg/LC_MESSAGES/vlc.mo
+usr/share/locale/ia/LC_MESSAGES/vlc.mo
+usr/share/locale/bg/LC_MESSAGES/vlc.mo
+usr/share/locale/ca/LC_MESSAGES/vlc.mo
+usr/share/locale/brx/LC_MESSAGES/vlc.mo
+usr/share/locale/bn_IN/LC_MESSAGES/vlc.mo
+usr/share/locale/sk/LC_MESSAGES/vlc.mo
+usr/share/locale/mn/LC_MESSAGES/vlc.mo
+usr/share/locale/zu/LC_MESSAGES/vlc.mo
+usr/share/locale/gu/LC_MESSAGES/vlc.mo
+usr/share/locale/af/LC_MESSAGES/vlc.mo
+usr/share/locale/nb/LC_MESSAGES/vlc.mo
+usr/share/locale/fi/LC_MESSAGES/vlc.mo
+usr/share/locale/pt_PT/LC_MESSAGES/vlc.mo
+usr/share/locale/tet/LC_MESSAGES/vlc.mo
+usr/share/locale/kk/LC_MESSAGES/vlc.mo
+usr/share/locale/eu/LC_MESSAGES/vlc.mo
+usr/share/locale/ky/LC_MESSAGES/vlc.mo
+usr/share/locale/ro/LC_MESSAGES/vlc.mo
+usr/share/locale/es/LC_MESSAGES/vlc.mo
+usr/share/locale/uk/LC_MESSAGES/vlc.mo
+usr/share/locale/ka/LC_MESSAGES/vlc.mo
+usr/share/locale/pt_BR/LC_MESSAGES/vlc.mo
+usr/share/locale/zh_CN/LC_MESSAGES/vlc.mo
+usr/share/locale/nl/LC_MESSAGES/vlc.mo
+usr/share/locale/id/LC_MESSAGES/vlc.mo
+usr/share/locale/ps/LC_MESSAGES/vlc.mo
+usr/share/locale/cgg/LC_MESSAGES/vlc.mo
+usr/share/locale/my/LC_MESSAGES/vlc.mo
+usr/share/locale/ga/LC_MESSAGES/vlc.mo
+usr/share/locale/bs/LC_MESSAGES/vlc.mo
+usr/share/locale/an/LC_MESSAGES/vlc.mo
+usr/share/locale/wa/LC_MESSAGES/vlc.mo
+usr/share/locale/ks_IN/LC_MESSAGES/vlc.mo
+usr/share/locale/fur/LC_MESSAGES/vlc.mo
+usr/share/locale/oc/LC_MESSAGES/vlc.mo
+usr/share/locale/it/LC_MESSAGES/vlc.mo
+usr/share/locale/sr/LC_MESSAGES/vlc.mo
+usr/share/locale/ff/LC_MESSAGES/vlc.mo
+usr/share/locale/kn/LC_MESSAGES/vlc.mo
+usr/share/locale/vi/LC_MESSAGES/vlc.mo
+usr/share/locale/pl/LC_MESSAGES/vlc.mo
+usr/share/locale/is/LC_MESSAGES/vlc.mo
+usr/share/locale/uz/LC_MESSAGES/vlc.mo
+usr/share/locale/mk/LC_MESSAGES/vlc.mo
+usr/share/kde4/*
+usr/share/applications/vlc.desktop
+usr/lib/vlc/*
+usr/lib/libvlccore.so.9
+usr/lib/libvlccore.so.9.0.0
+usr/lib/libvlc.so
+usr/lib/libvlccore.la
+usr/lib/libvlccore.so
+usr/lib/libvlc.so.5.6.0
+usr/lib/pkgconfig
+usr/lib/pkgconfig/vlc-plugin.pc
+usr/lib/pkgconfig/libvlc.pc
+usr/lib/libvlc.la
+usr/lib/libvlc.so.5
+usr/usr/share/doc/vlc-3.0.3
+usr/include/vlc/*
+usr/bin/vlc
+usr/bin/nvlc
+usr/bin/svlc
+usr/bin/vlc-wrapper
+usr/bin/qvlc
+usr/bin/rvlc
+usr/bin/cvlc
+EOF
+
+menu
