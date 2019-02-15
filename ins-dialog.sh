@@ -1,7 +1,10 @@
 #!/bin/bash
-#
-#
-#
+#######################################################
+#       install dialog Mazon OS - version 0.0.1       #
+#                                                     #
+#      @utor: Diego Sarzi <diegosarzi@gmail.com>      #
+#      created: 2019/02/15          licence: MIT      #
+#######################################################
 
 # functions
 #########################
@@ -25,7 +28,43 @@ customtar(){
 
 # primeira tela // helo
 ##########################
-dialog --msgbox '- Welcome to install Mazon OS. B)' 5 40
+dialog --title 'Mazon OS - beta install' --msgbox '- Welcome to install Mazon OS. B)' 5 45
+
+# escolha a hd a ser instalada // install hd
+#########################
+partitions=( $(blkid | cut -d: -f1 | sed "s/$/ '*' /") )
+part=$(dialog --clear --menu 'Choose partition for installation Mazon:' \
+	0 0 0 \
+	"${partitions[@]}" \
+	2>&1 >/dev/tty )
+
+# deseja formatar?
+format=
+dialog --title '**** FORMAT ****' \
+	--yesno "Format partition $part ?\n *(All data will be lost)" 0 0 && format='yes'
+if [ $format = 'yes' ] ; then
+	# WARNING! FORMAT PARTITION
+	#######################
+	dialog --msgbox "Formating $part (ext4) ..." 0 0
+	sleep 2
+	########################
+	######## mkfs.ext4 $part
+fi
+
+# Partition mount
+########################
+# mount $part /mnt
+
+# tela de download // wget
+#########################
+download=
+dialog --yesno 'Would you like to download mazon-lasted.tar.xz?' 5 55 && download='yes'
+if [ $download = 'yes' ]; then
+	URL="https://sourceforge.net/projects/mazonos/files/mazon_beta-1.2.tar.xz"
+	wget "$URL" 2>&1 | \
+ 	 stdbuf -o0 awk '/[.] +[0-9][0-9]?[0-9]?%/ { print substr($0,63,3) }' | \
+  	 dialog --gauge "Downloading mazon-lasted.tar.xz..." 7 70
+fi
 
 # segunda tela // menu
 #########################
@@ -51,8 +90,11 @@ while : ; do
 			XFCE4 'Classic and powerfull!' \
 			i3WM 'Desktop for advanceds guys B).') 
 			case "$resfull" in
-				XFCE4) fulltar ;;
-				i3WM) clear ; echo "ola" ; sleep 2 ;;
+				# TROCAR POR /MNT *********************
+				XFCE4) (pv -n mazon_beta-1.2.tar.xz | tar xJpvf - -C /root/scripts/mazonos/mnt ) \
+					2>&1 | dialog --gauge "Extracting files..." 6 50 ;;
+				i3WM) (pv -n mazon_*.tar.gz | tar xJpvf - -C /root/scripts/mazonos/mnt ) \
+					2>&1 | dialog --gauge "Extracting files..." 6 50 ;;
 			esac
 			;;		
 		minimal) dialog --msgbox 'minimal' 0 0
@@ -71,38 +113,29 @@ while : ; do
 			TELEGRAM '...' OFF \
 			SIMPLESCREENRECORDER '...' OFF)
 			
-			# create vars
+			# create choose softwares vars
 			libre= ; gimp= ; inkscape= ; qt5= ; sublime_text= ; vlc= ; openjdk= ; telegram=
 
 			echo "$rescustom" | while read LINHA
 			do
 				if [ $LINHA = "LIBREOFFICE" ]; then
 					libre="--exclude-from=/tmp/libre.exclude" 
-					clear ; echo "$LINHA" ; sleep 1 
 				elif [ $LINHA = "GIMP" ]; then
 					gimp="--exclude-from=/tmp/gimp.exclude"
-					clear ; echo "$LINHA" ; sleep 1 
 				elif [ $LINHA = "INKSCAPE" ]; then
 					inkscape="--exclude-from=/tmp/inkscape.exclude"
-					clear ; echo "$LINHA" ; sleep 1 
 				elif [ $LINHA = "QT5" ]; then
 					qt5="--exclude-from=/tmp/qt5.exclude"
-					clear ; echo "$LINHA" ; sleep 1 
 				elif [ $LINHA = "SUBLIME_TEXT" ]; then
 					sublime_text="--exclude-from=/tmp/sublime_text.exclude"
-					clear ; echo "$LINHA" ; sleep 1 
 				elif [ $LINHA = "VLC" ]; then
 					vlc="--exclude-from=/tmp/vlc.exclude"
-					clear ; echo "$LINHA" ; sleep 1 
 				elif [ $LINHA = "OPENJDK" ]; then
 					openjdk="--exclude-from=/tmp/openjdk.exclude"
-					clear ; echo "$LINHA" ; sleep 1 
 				elif [ $LINHA = "TELEGRAM" ]; then
 					telegram="--exclude-from=/tmp/telegram.exclude"
-					clear ; echo "$LINHA" ; sleep 1 
 				elif [ $LINHA = "SIMPLESCREENRECORDER" ]; then
 					ssr="--exclude-from=/tmp/ssr.exclude"
-					clear ; echo "$LINHA" ; sleep 1 
 				fi				
 			done
 			;;
