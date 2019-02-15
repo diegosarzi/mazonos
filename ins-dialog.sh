@@ -6,26 +6,6 @@
 #      created: 2019/02/15          licence: MIT      #
 #######################################################
 
-# functions
-#########################
-# tar full
-fulltar(){
-clear
-echo "teste"
-sleep 2
-clear
-}
-
-# tar minimal
-tarminimal(){
-	break
-}
-
-# custom tar
-customtar(){
- 	break
-}
-
 # primeira tela // helo
 ##########################
 dialog --title 'Mazon OS - beta install' --msgbox '- Welcome to install Mazon OS. B)' 5 45
@@ -41,11 +21,11 @@ part=$(dialog --clear --menu 'Choose partition for installation Mazon:' \
 # deseja formatar?
 format=
 dialog --title '**** FORMAT ****' \
-	--yesno "Format partition $part ?\n *(All data will be lost)" 0 0 && format='yes'
+	--yesno "*(All data will be lost) \nFormat partition $part ?" 6 45 && format='yes'
 if [ $format = 'yes' ] ; then
 	# WARNING! FORMAT PARTITION
 	#######################
-	dialog --msgbox "Formating $part (ext4) ..." 0 0
+	dialog --msgbox "Formating $part (ext4) ..." 5 45
 	sleep 2
 	########################
 	######## mkfs.ext4 $part
@@ -54,6 +34,7 @@ fi
 # Partition mount
 ########################
 # mount $part /mnt
+# cd /mnt
 
 # tela de download // wget
 #########################
@@ -91,9 +72,9 @@ while : ; do
 			i3WM 'Desktop for advanceds guys B).') 
 			case "$resfull" in
 				# TROCAR POR /MNT *********************
-				XFCE4) (pv -n mazon_beta-1.2.tar.xz | tar xJpvf - -C /root/scripts/mazonos/mnt ) \
+				XFCE4) (pv -n mazon_lasted.tar.xz | tar xJpvf - -C /root/scripts/mazonos/mnt ) \
 					2>&1 | dialog --gauge "Extracting files..." 6 50 ;;
-				i3WM) (pv -n mazon_*.tar.gz | tar xJpvf - -C /root/scripts/mazonos/mnt ) \
+				i3WM) (pv -n mazon_lasted.tar.gz | tar xJpvf - -C /root/scripts/mazonos/mnt ) \
 					2>&1 | dialog --gauge "Extracting files..." 6 50 ;;
 			esac
 			;;		
