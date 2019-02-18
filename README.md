@@ -1,2 +1,2 @@
 # mazonos
-MazonOS Alpha(0.1)
+Mazon OS Beta(1.2)
