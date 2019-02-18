@@ -1,0 +1,114 @@
+> LFS 8.3 / 01/02/2019 - 02:24am
+
+######### anotações #########
+# Sistema temporário com flags CFLAGS="-O2" CXXFLAGS="-O2".
+# Utilizando um processador: AMD FX(tm)-8350 Eight-Core Processor
+# Flags exportadas: MAKEFLAGS="-j 8"
+
+- 5.4. Binutils-2.31.1 - Pass 1
+# time make: 0m42.602s
+
+- GCC - Pass 1
+# time make: 4m41.424s
+# Adicionei a flag CFLAGS="-O2" e CXXFLAGS="-O2".
+# Com isso precisei adicionar --disable-bootstrap para compiar o gcc fora da conf padrão da minha maquina.
+
+- Linux-4.18.5 API Headers
+
+- GLIBC
+# time make: 2m18.168s
+# Tive problemas na instalação na primeira compilação, recriei.
+# Precisei criar um arquivo com touch /tools/etc/ld.so.conf pois o make install não estava localizando o arquivo.
+# acabei reparando que estava sem a flag LFS_TGT e comecei novamente sem problemas.
+# Reposta do teste:
+# [Requesting program interpreter: /tools/lib64/ld-linux-x86-64.so.2]
+
+- Libstdc++ from GCC-8.2.0
+# time make: 0m20.650s
+
+- Binutils-2.31.1 - Pass 2
+# time make: 0m41.888s
+
+- GCC-8.2.0 - Pass 2
+# time make: 8m7.379s
+# Resposta do teste:
+# [Requesting program interpreter: /tools/lib64/ld-linux-x86-64.so.2]
+
+- Tcl-8.6.8
+# time make: 1m19.967s
+# conjunto de testes demora bastante e não se diz necessário pelo livro.
+
+- Expect-5.45.4
+# time make: 0m1.077s
+
+- DejaGNU-1.6.1
+
+- M4-1.4.18
+# time make: 0m2.227s
+
+- Ncurses-6,1
+# time make: 0m16.379s
+
+- Bash-4.4.18
+# time make: 0m8.981s
+
+- Bison-3.0.5
+# time make: 0m2.856s
+
+- Bzip2-1.0.6
+# time make: 0m1.528s
+
+- Coreutils-8.30
+# time make: 0m10.320s
+
+- Diffutils-3.6
+# time make: 0m2.170s
+
+- File-5.34
+# time make: 0m1.477s
+
+- Findutils-4.6.0
+# time make: 0m3.700s
+
+- Gawk-4.2.1
+# time make: 0m5.879s
+
+- Gettext-0.19.8.1
+# time make: 
+# gnulib-lib : 0m14.040s
+# intl pluralx.c : 0m0.005s
+# src msgfmt : 0m6.670s
+# src msgmerge : 0m0.689s
+# src xgettext : 0m1.563s
+
+- Grep-3.1
+# time make: 0m2.202s
+
+- Gzip-1.9
+# time make: 0m1.426s
+
+- Make-4.2.1
+# time make: 0m1.551s
+
+- Patch-2.7.6
+# time make: 0m2.137s
+
+- Perl-5.28.0
+# time make: 0m45.504s
+
+- Sed-4.6
+# time make: 0m1.571s
+
+- Tar-1.30
+# time make: 0m3.990s
+
+- Texinfo-6.5
+# time make: 0m6.773s
+
+- Util-linux-2.32.1
+# time make: 0m22.090s
+
+- Xz-5.2.4
+# time make: 0m5.730s
+
+> LFS 8.3 / 01/02/2019 - 04:00am
