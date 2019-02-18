@@ -7,11 +7,12 @@
 
 cd /tmp/
 echo "Create temp directory /tmp/bananapkg/"
-git clone http://github.com/mazonos/bananapkg.git
+git clone https://github.com/slackjeff/bananapkg.git
 
 cd bananapkg/
-chmod -v +x createpkg burnpkg plantpkg
-cp -v createpkg burnpkg plantpkg /sbin/
+chmod +x install.sh
+
+bash install.sh
 
 echo "Burn temp files..."
 rm -rf /tmp/bananapkg/
