@@ -41,6 +41,7 @@ ret=$?
 form_lang=$(yad --title"Mazon Install" \
 	--width="500" \
 	--height="200" \
+	--center \
 	--image="region.png" \
 	--text="\nVamos começar escolhendo a sua linguagem e seu teclado ok?\n" \
 	--form \
@@ -57,6 +58,7 @@ KEYBOARD=$(echo "$form_lang" | cut -d"|" -f 2)
 form_part=$(yad --title="Mazon Install" \
 	--width="500" \
 	--height="200" \
+	--center \
 	--image="hd.png" \
 	--text="\nQual HD gostaria de instalar a Mazon?\n" \
 	--form \
@@ -78,6 +80,7 @@ partitions=( $( fdisk -l | grep $HD | egrep -o '/dev/sd[a-z][0-9]' | uniq | sed 
 form_part=$(yad --title="Mazon Install" \
 	--width="500" \
 	--height="200" \
+	--center \
 	--image="hd.png" \
 	--text="\nDefina os principais pontos de montagem:\n" \
 	--form \
