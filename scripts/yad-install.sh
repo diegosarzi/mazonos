@@ -19,6 +19,24 @@ keymaps=( $( find /usr/share/keymaps/ -name "*.map.gz" | cut -d/ -f7 | sed -e "s
 ## HARD DISKS
 hd=( $( fdisk -l | egrep -o '/dev/sd[a-x]' | uniq | sed 's/\n/!/g' | sed ':a;N;s/\n/\!/g;ta' ) )
 
+
+# FUNCTIONS
+######################
+installok(){
+	yad \
+	--title="Mazon Install" \
+	--width="500" \
+	--height="200" \
+	--center \
+	--image="logo.png" \
+	--align="center" \
+	--text="\n\n\n\nSua instalação está completa! Obrigado por utilizar a Mazon OS - dúvidas? visite nosso fórum em http://mazonos.com/forum\n\nGood Vibes B)" \
+	--button="gtk-close:1" --button="gtk-ok:0"
+
+	exit 0
+}
+
+
 # SCREENS
 #######################
 
@@ -102,14 +120,12 @@ if [[ $MOUNTROOT == "not mounted" ]] ; then
 		--button="gtk-close:1"
 	exit 0
 else
-	echo "PARTIÇÃO MONTADA!"
-#	mkdir /mnt/mazonos
-#	mount $MOUNTROOT /mnt/mazonos
+	mkdir /mnt/mazonos
+	mount $MOUNTROOT /mnt/mazonos
 fi
 
 if [[ $MOUNTSWAP != "not mounted" ]] ; then
-#	swapon $MOUNTSWAP
-	echo "Swap ON!"
+	swapon $MOUNTSWAP
 fi
 
 form_user=$(yad --title="Mazon Install" \
@@ -145,13 +161,96 @@ form_resumo=$(yad --title="Mazon Install" \
 ret=$?
 [[ $ret -eq 1 ]] && exit 0
 
-rsync -ravp /lib/initrd/system/ /mnt/mazonos/ | \
+rsync -ravp /lib/initramfs/system/ /mnt/mazonos/ | \
 	yad --progress \
 	--title="Mazon Install" \
 	--width="500" \
-	--height="200" \
+	--height="100" \
 	--center \
+	--text="\nAguardem enquanto instalamos a Mazon para você.\n"
 	--progress-text="installing..." \
 	--pulsate \
 	--auto-close \
 	--auto-kill
+
+
+### INSTALL COMPLETE
+### FSTAB CONFIGURATION
+#####################################
+
+bl=$(blkid $MOUNTROOT | cut -d"\"" -f2)
+echo "UUID=$bl / ext4 defaults 1 1" >> /mnt/mazonos/etc/fstab
+
+if [[ $MOUNTSWAP != "not mounted" ]] ; then
+	blswap=$(blkid $MOUNTSWAP | cut -d"\"" -f2)
+	echo "UUID=$blswap swap swap pri=1 0 0" >> /mnt/mazonos/etc/fstab
+if
+
+if [[ $MOUNTHOME != "not mounted" ]] ; then
+	blhome=$(blkid $MOUNTHOME | cut -d"\"" -f2)
+	echo "UUID=$blhome /home ext4 defaults 0 0" >> /mnt/mazonos/etc/fstab
+if
+
+### USER CREATION
+chroot /mnt/mazonos/ /bin/bash -c "useradd -m -G audio,video $MUSER -p $MPASSWD > /dev/null 2>&1"
+
+chroot /mnt/mazonos/ /bin/bash -c "(echo $MUSER:$MPASSWD) | chpasswd -m > /dev/null 2>&1"
+
+form_grub=$(yad --title="Mazon Install" \
+	--width="500" \
+	--height="200" \
+	--center \
+	--image="question.png" \
+	--text="\nVocê gostaria de instalar o GRUB?\n" \
+	--button="gtk-close:1" --button="gtk-ok:0"
+)
+
+ret=$?
+[[ $ret -eq 1 ]] && installok()
+
+rsync -ravp /lib/initramfs/system/ /mnt/mazonos/ | \
+	yad --progress \
+	--title="Mazon Install" \
+	--width="500" \
+	--height="100" \
+	--center \
+	--text="\nAguardem enquanto instalamos a Mazon para você.\n"
+	--progress-text="installing..." \
+	--pulsate \
+	--auto-close \
+
+
+
+### GRUB INSTALL
+cd /mnt/mazonos
+mount --rbind /dev dev/
+mount --rbind /sys sys/	
+mount --rbind /run run/
+mount --type proc /proc proc/
+chroot /mnt/mazonos/ bin/bash -c "grub-install $HD > /dev/null 2>&1"
+	yad --progress \
+	--title="Mazon Install" \
+	--width="500" \
+	--height="100" \
+	--center \
+	--text="\nInstalando GRUB\n"
+	--progress-text="installing..." \
+	--pulsate \
+	--auto-close \
+	--auto-kill
+
+
+
+chroot /mnt/mazonos/ bin/bash -c "grub-mkconfig -o /boot/grub/grub.cfg > /dev/null 2>&1"
+
+
+
+yad --title="Mazon Install" \
+	--width="500" \
+	--height="200" \
+	--center \
+	--text="\n\n" \
+	--form \
+	--field="Deseja instalar?":LBL \
+	--button="gtk-close:1" --button="gtk-ok:0"
+
