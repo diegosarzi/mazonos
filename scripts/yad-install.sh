@@ -84,18 +84,74 @@ form_part=$(yad --title="Mazon Install" \
 	--image="hd.png" \
 	--text="\nDefina os principais pontos de montagem:\n" \
 	--form \
-	--field="(root*) /:":CB $partitions \
-	--field="(home) /home:":CB $partitions \
-	--field="(swap) :":CB $partitions \
+	--field="(root*) /:":CB  "not mounted"!$partitions \
+	--field="(home) /home:":CB "not mounted"!$partitions \
+	--field="(swap) :":CB "not mounted"!$partitions \
 	--button="gtk-close:1" --button="gtk-ok:0"
 	)
 ret=$?
 [[ $ret -eq 1 ]] && exit 0
 
-MOUNTROOT=(echo "$form_part" | cut -d"|" -f 1)
-MOUNTHOME=(echo "$form_part" | cut -d"|" -f 2)
-MOUNTSWAP=(echo "$form_part" | cut -d"|" -f 3)
+MOUNTROOT=$(echo "$form_part" | cut -d"|" -f 1)
+MOUNTHOME=$(echo "$form_part" | cut -d"|" -f 2)
+MOUNTSWAP=$(echo "$form_part" | cut -d"|" -f 3)
 
-mkdir /mnt/mazonos
-mount $MOUNTROOT /mnt/mazonos
-mkswap $MOUNTSWAP
+if [[ $MOUNTROOT == "not mounted" ]] ; then
+	yad --title="Error" \
+		--text "Sem partição / não podemos instalar!" \
+		--button="gtk-close:1"
+	exit 0
+else
+	echo "PARTIÇÃO MONTADA!"
+#	mkdir /mnt/mazonos
+#	mount $MOUNTROOT /mnt/mazonos
+fi
+
+if [[ $MOUNTSWAP != "not mounted" ]] ; then
+#	swapon $MOUNTSWAP
+	echo "Swap ON!"
+fi
+
+form_user=$(yad --title="Mazon Install" \
+	--width="500" \
+	--height="200" \
+	--center \
+	--image="user.png" \
+	--text="\nCrie um usuário:\n" \
+	--form \
+	--field="Usuário :" \
+	--field="Senha :":H \
+	--field="Nome do computador: " \
+	--button="gtk-close:1" --button="gtk-ok:0"
+	)
+ret=$?
+[[ $ret -eq 1 ]] && exit 0
+
+MUSER=$(echo "$form_user" | cut -d"|" -f 1)
+MPASSWD=$(echo "$form_user" | cut -d"|" -f 2)
+MDOMAIN=$(echo "$form_user" | cut -d"|" -f 3)
+
+form_resumo=$(yad --title="Mazon Install" \
+	--width="500" \
+	--height="200" \
+	--center \
+	--image="resume.png" \
+	--text="\nResumo...\n" \
+	--form \
+	--field="Deseja instalar?":LBL \
+	--button="gtk-close:1" --button="gtk-ok:0"
+)
+
+ret=$?
+[[ $ret -eq 1 ]] && exit 0
+
+rsync -ravp /lib/initrd/system/ /mnt/mazonos/ | \
+	yad --progress \
+	--title="Mazon Install" \
+	--width="500" \
+	--height="200" \
+	--center \
+	--progress-text="installing..." \
+	--pulsate \
+	--auto-close \
+	--auto-kill
