@@ -36,9 +36,6 @@ installok(){
 	exit 0
 }
 
-installok
-
-
 # SCREENS
 #######################
 
