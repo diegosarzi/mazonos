@@ -90,8 +90,8 @@ ret=$?
 
 HD=$(echo "$form_part" | cut -d"|" -f 1)
 
-#gparted $HD &
-#wait
+gparted $HD &
+wait
 
 partitions=( $( fdisk -l | grep $HD | egrep -o '/dev/sd[a-z][0-9]' | uniq | sed 's/\n/!/g' | sed ':a;N;s/\n/\!/g;ta' ) )
 
@@ -161,15 +161,15 @@ form_resumo=$(yad --title="Mazon Install" \
 ret=$?
 [[ $ret -eq 1 ]] && exit 0
 
-rsync -ravp /lib/initramfs/system/ /mnt/mazonos/ | \
+rsync -ravp --info=progress2 /lib/initramfs/system/ /mnt/mazonos/ | grep -o "[0-9]*%" | tr -d '%' | \
 	yad --progress \
 	--title="Mazon Install" \
 	--width="500" \
 	--height="100" \
 	--center \
-	--text="\nAguardem enquanto instalamos a Mazon para você.\n"
+	--text="\nAguardem enquanto instalamos a Mazon para você.\n" \
 	--progress-text="installing..." \
-	--pulsate \
+	--percentage=1 \
 	--auto-close \
 	--auto-kill
 
@@ -208,26 +208,13 @@ form_grub=$(yad --title="Mazon Install" \
 ret=$?
 [[ $ret -eq 1 ]] && installok()
 
-rsync -ravp /lib/initramfs/system/ /mnt/mazonos/ | \
-	yad --progress \
-	--title="Mazon Install" \
-	--width="500" \
-	--height="100" \
-	--center \
-	--text="\nAguardem enquanto instalamos a Mazon para você.\n"
-	--progress-text="installing..." \
-	--pulsate \
-	--auto-close \
-
-
-
 ### GRUB INSTALL
-cd /mnt/mazonos
+cd /mnt/mazonos/
 mount --rbind /dev dev/
 mount --rbind /sys sys/	
 mount --rbind /run run/
 mount --type proc /proc proc/
-chroot /mnt/mazonos/ bin/bash -c "grub-install $HD > /dev/null 2>&1"
+chroot /mnt/mazonos/ bin/bash -c "grub-install $HD > /dev/null 2>&1" | \
 	yad --progress \
 	--title="Mazon Install" \
 	--width="500" \
@@ -242,15 +229,3 @@ chroot /mnt/mazonos/ bin/bash -c "grub-install $HD > /dev/null 2>&1"
 
 
 chroot /mnt/mazonos/ bin/bash -c "grub-mkconfig -o /boot/grub/grub.cfg > /dev/null 2>&1"
-
-
-
-yad --title="Mazon Install" \
-	--width="500" \
-	--height="200" \
-	--center \
-	--text="\n\n" \
-	--form \
-	--field="Deseja instalar?":LBL \
-	--button="gtk-close:1" --button="gtk-ok:0"
-
