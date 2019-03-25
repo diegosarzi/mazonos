@@ -31,7 +31,7 @@ installok(){
 	--image="sucess.png" \
 	--align="center" \
 	--text="\n\nSua instalação está completa! Obrigado por utilizar a Mazon OS - dúvidas? visite nosso fórum em: \nhttp://mazonos.com/forum\n\nGood Vibes B)" \
-	--button="gtk-close:1"
+	--button="gtk-close:1" --button="gtk-ok:0"
 
 	exit 0
 }
@@ -54,6 +54,7 @@ screnn=$(yad \
 ret=$?
 [[ $ret -eq 1 ]] && exit 0
 
+installok
 
 ## LANGUAGEM AND KEYBOARD SCREEN
 form_lang=$(yad --title"Mazon Install" \
@@ -150,7 +151,7 @@ form_resumo=$(yad --title="Mazon Install" \
 	--height="200" \
 	--center \
 	--image="resume.png" \
-	--text="\n\nResumo...\n\n\Linguagem: $LANGUAGE\nKeyboard: $KEYBOARD\nPonto de montagem /: $MOUNTROOT\nPonto de montagem /home: $MOUNTHOME\nPonto de montagem swap: $MOUNTSWAP\nUser: $MUSER" \
+	--text="\nResumo...\n" \
 	--form \
 	--field="Deseja instalar?":LBL \
 	--button="gtk-close:1" --button="gtk-ok:0"
@@ -223,12 +224,12 @@ ret=$?
 [[ $ret -eq 1 ]] && installok
 
 ### GRUB INSTALL
+echo "ola mundo"
 cd /mnt/mazonos/
 mount --rbind /dev dev/
 mount --rbind /sys sys/	
 mount --rbind /run run/
 mount --type proc /proc proc/
-cd -
 chroot /mnt/mazonos/ bin/bash -c "grub-install $HD > /dev/null 2>&1" | \
 	yad --progress \
 	--title="Mazon Install" \
@@ -253,5 +254,4 @@ chroot /mnt/mazonos/ bin/bash -c "grub-mkconfig -o /boot/grub/grub.cfg > /dev/nu
 	--auto-close \
 	--auto-kill
 
-umount -Rl /mnt/mazonos
 installok
