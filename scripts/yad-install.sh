@@ -31,7 +31,9 @@ installok(){
 	--image="sucess.png" \
 	--align="center" \
 	--text="\n\nSua instalação está completa! Obrigado por utilizar a Mazon OS - dúvidas? visite nosso fórum em: \nhttp://mazonos.com/forum\n\nGood Vibes B)" \
-	--button="gtk-close:1"
+	--button="gtk-close:0" --button="REBOOT!:1"
+	rt=$?
+	[[ $rt -eq 1 ]] && reboot
 
 	exit 0
 }
