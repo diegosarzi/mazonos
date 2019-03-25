@@ -199,7 +199,7 @@ chroot /mnt/mazonos/ /bin/bash -c "(echo $MUSER:$MPASSWD) | chpasswd -m > /dev/n
 chroot /mnt/mazonos/ /bin/bash -c "echo $MDOMAIN > /mnt/mazonos/etc/hostname"
 
 ### REMOVE LIGHTDM
-chroot /mnt/mazonos/ /bin/bash -c "banana -r lightdm -y > /dev/null ; banana -r lightdm_gtk_greeter -y > /dev/null ; banana -r sudo -y > /dev/null ; userdel mazon > /dev/null ; rm -rf /home/mazon"
+chroot /mnt/mazonos/ /bin/bash -c "banana -r lightdm -y > /dev/null ; banana -r lightdm_gtk_greeter -y > /dev/null ; banana -r sudo -y > /dev/null ; userdel mazon > /dev/null ; rm -rf /home/mazon" | \
 yad --progress \
 	--title="Mazon Install" \
 	--width="500" \
