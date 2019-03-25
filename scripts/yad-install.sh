@@ -188,6 +188,7 @@ if [[ $MOUNTSWAP != "not mounted" ]] ; then
 fi
 
 if [[ $MOUNTHOME != "not mounted" ]] ; then
+	mount $MOUNTHOME /mazonos/home
 	blhome=$(blkid $MOUNTHOME | cut -d"\"" -f2)
 	echo "UUID=$blhome /home ext4 defaults 0 0" >> /mnt/mazonos/etc/fstab
 fi
