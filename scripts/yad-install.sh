@@ -169,6 +169,7 @@ rsync -ravp --info=progress2 /lib/initramfs/system/ /mnt/mazonos/ | grep -o "[0-
 	--center \
 	--text="\nAguardem enquanto instalamos a Mazon para você.\n" \
 	--progress-text="installing..." \
+	--pulsate \
 	--percentage=1 \
 	--auto-close \
 	--auto-kill
