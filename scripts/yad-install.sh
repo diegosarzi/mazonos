@@ -28,7 +28,7 @@ installok(){
 	--width="500" \
 	--height="200" \
 	--center \
-	--image="logo.png" \
+	--image="sucess.png" \
 	--align="center" \
 	--text="\n\n\n\nSua instalação está completa! Obrigado por utilizar a Mazon OS - dúvidas? visite nosso fórum em http://mazonos.com/forum\n\nGood Vibes B)" \
 	--button="gtk-close:1" --button="gtk-ok:0"
@@ -188,7 +188,7 @@ if [[ $MOUNTSWAP != "not mounted" ]] ; then
 fi
 
 if [[ $MOUNTHOME != "not mounted" ]] ; then
-	mount $MOUNTHOME /mazonos/home
+	mount $MOUNTHOME /mnt/mazonos/home
 	blhome=$(blkid $MOUNTHOME | cut -d"\"" -f2)
 	echo "UUID=$blhome /home ext4 defaults 0 0" >> /mnt/mazonos/etc/fstab
 fi
@@ -196,8 +196,23 @@ fi
 ### USER CREATION
 chroot /mnt/mazonos/ /bin/bash -c "useradd -m -G audio,video $MUSER -p $MPASSWD > /dev/null 2>&1"
 chroot /mnt/mazonos/ /bin/bash -c "(echo $MUSER:$MPASSWD) | chpasswd -m > /dev/null 2>&1"
-chroot /mnt/mazonos/ /bin/bash -c "echo '$MDOMAIN' > /mnt/mazonos/etc/hostname"
+chroot /mnt/mazonos/ /bin/bash -c "echo $MDOMAIN > /mnt/mazonos/etc/hostname"
 
+### REMOVE LIGHTDM
+chroot /mnt/mazonos/ /bin/bash -c "banana -r lightdm -y > /dev/null ; banana -r lightdm_gtk_greeter -y > /dev/null ; banana -r sudo -y > /dev/null ; userdel mazon > /dev/null ; rm -rf /home/mazon"
+yad --progress \
+	--title="Mazon Install" \
+	--width="500" \
+	--height="100" \
+	--center \
+	--text="\nRemovendo pacotes temporários...\n" \
+	--progress-text="removing..." \
+	--pulsate \
+	--auto-close \
+	--auto-kill
+
+
+### GRUB FORM
 form_grub=$(yad --title="Mazon Install" \
 	--width="500" \
 	--height="200" \
