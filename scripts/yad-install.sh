@@ -184,17 +184,17 @@ echo "UUID=$bl / ext4 defaults 1 1" >> /mnt/mazonos/etc/fstab
 if [[ $MOUNTSWAP != "not mounted" ]] ; then
 	blswap=$(blkid $MOUNTSWAP | cut -d"\"" -f2)
 	echo "UUID=$blswap swap swap pri=1 0 0" >> /mnt/mazonos/etc/fstab
-if
+fi
 
 if [[ $MOUNTHOME != "not mounted" ]] ; then
 	blhome=$(blkid $MOUNTHOME | cut -d"\"" -f2)
 	echo "UUID=$blhome /home ext4 defaults 0 0" >> /mnt/mazonos/etc/fstab
-if
+fi
 
 ### USER CREATION
 chroot /mnt/mazonos/ /bin/bash -c "useradd -m -G audio,video $MUSER -p $MPASSWD > /dev/null 2>&1"
-
 chroot /mnt/mazonos/ /bin/bash -c "(echo $MUSER:$MPASSWD) | chpasswd -m > /dev/null 2>&1"
+chroot /mnt/mazonos/ /bin/bash -c "echo '$MDOMAIN' > /mnt/mazonos/etc/hostname"
 
 form_grub=$(yad --title="Mazon Install" \
 	--width="500" \
@@ -206,9 +206,10 @@ form_grub=$(yad --title="Mazon Install" \
 )
 
 ret=$?
-[[ $ret -eq 1 ]] && installok()
+[[ $ret -eq 1 ]] && installok
 
 ### GRUB INSTALL
+echo "ola mundo"
 cd /mnt/mazonos/
 mount --rbind /dev dev/
 mount --rbind /sys sys/	
@@ -220,12 +221,22 @@ chroot /mnt/mazonos/ bin/bash -c "grub-install $HD > /dev/null 2>&1" | \
 	--width="500" \
 	--height="100" \
 	--center \
-	--text="\nInstalando GRUB\n"
+	--text="\nInstalando GRUB\n" \
 	--progress-text="installing..." \
 	--pulsate \
 	--auto-close \
 	--auto-kill
 
+chroot /mnt/mazonos/ bin/bash -c "grub-mkconfig -o /boot/grub/grub.cfg > /dev/null 2>&1" | \
+	yad --progress \
+	--title="Mazon Install" \
+	--width="500" \
+	--height="100" \
+	--center \
+	--text="\nCriando /boot/grub/grub.cfg\n" \
+	--progress-text="installing..." \
+	--pulsate \
+	--auto-close \
+	--auto-kill
 
-
-chroot /mnt/mazonos/ bin/bash -c "grub-mkconfig -o /boot/grub/grub.cfg > /dev/null 2>&1"
+installok
