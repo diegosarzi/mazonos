@@ -30,11 +30,13 @@ installok(){
 	--center \
 	--image="sucess.png" \
 	--align="center" \
-	--text="\n\n\n\nSua instalação está completa! Obrigado por utilizar a Mazon OS - dúvidas? visite nosso fórum em http://mazonos.com/forum\n\nGood Vibes B)" \
+	--text="\n\nSua instalação está completa! Obrigado por utilizar a Mazon OS - dúvidas? visite nosso fórum em: \nhttp://mazonos.com/forum\n\nGood Vibes B)" \
 	--button="gtk-close:1" --button="gtk-ok:0"
 
 	exit 0
 }
+
+installok
 
 
 # SCREENS
@@ -137,7 +139,6 @@ form_user=$(yad --title="Mazon Install" \
 	--form \
 	--field="Usuário :" \
 	--field="Senha :":H \
-	--field="Nome do computador: " \
 	--button="gtk-close:1" --button="gtk-ok:0"
 	)
 ret=$?
@@ -145,7 +146,6 @@ ret=$?
 
 MUSER=$(echo "$form_user" | cut -d"|" -f 1)
 MPASSWD=$(echo "$form_user" | cut -d"|" -f 2)
-MDOMAIN=$(echo "$form_user" | cut -d"|" -f 3)
 
 form_resumo=$(yad --title="Mazon Install" \
 	--width="500" \
@@ -196,7 +196,6 @@ fi
 ### USER CREATION
 chroot /mnt/mazonos/ /bin/bash -c "useradd -m -G audio,video $MUSER -p $MPASSWD > /dev/null 2>&1"
 chroot /mnt/mazonos/ /bin/bash -c "(echo $MUSER:$MPASSWD) | chpasswd -m > /dev/null 2>&1"
-chroot /mnt/mazonos/ /bin/bash -c "echo $MDOMAIN > /mnt/mazonos/etc/hostname"
 
 ### REMOVE LIGHTDM
 chroot /mnt/mazonos/ /bin/bash -c "banana -r lightdm -y > /dev/null ; banana -r lightdm_gtk_greeter -y > /dev/null ; banana -r sudo -y > /dev/null ; userdel mazon > /dev/null ; rm -rf /home/mazon" | \
