@@ -59,9 +59,9 @@ screnn=$(yad \
 ret=$?
 [[ $ret -eq 1 ]] && exit 0
 
-
 ## LANGUAGEM AND KEYBOARD SCREEN
-form_lang=$(yad --title"Mazon Install" \
+form_lang=$(yad \
+	--title="Mazon Install" \
 	--width="500" \
 	--height="200" \
 	--center \
@@ -77,6 +77,7 @@ ret=$?
 
 LANGUAGE=$(echo "$form_lang" | cut -d"|" -f 1)
 KEYBOARD=$(echo "$form_lang" | cut -d"|" -f 2)
+lang=$(echo $LANGUAGE | cut -d. -f1,2)
 
 form_part=$(yad --title="Mazon Install" \
 	--width="500" \
@@ -171,7 +172,7 @@ rsync -ravp --info=progress2 /lib/initramfs/system/ /mnt/mazonos/ | grep -o "[0-
 	--height="100" \
 	--center \
 	--text="\nAguardem enquanto instalamos a Mazon para você.\n" \
-	--progress-text="installing..." \
+	--progress-text="installing... wait 3-10 minutes..." \
 	--pulsate \
 	--percentage=1 \
 	--auto-close \
@@ -214,7 +215,7 @@ yad --progress \
 	--auto-kill
 
 ### SETING LOCALE
-chroot /mnt/mazonos/ /bin/bash -c "sed 's/LANG=.*/LANG=$LANGUAGE/g' /etc/profile.d/i18n.sh > /etc/profile.d/i18n.sh.change ; mv /etc/profile.d/i18n.sh.change /etc/profile.d/i18n.sh ; sed 's/$localechange/#$localechange/g' /etc/locale.gen > /etc/locale.gen.change ; sed 's/#$LANGUAGE/$LANGUAGE/g' /etc/locale.gen.change > /etc/locale.gen ; locale-gen" | \
+chroot /mnt/mazonos/ /bin/bash -c "sed 's/LANG=.*/LANG=$lang/g' /etc/profile.d/i18n.sh > /etc/profile.d/i18n.sh.change ; mv /etc/profile.d/i18n.sh.change /etc/profile.d/i18n.sh ; sed 's/$localechange/#$localechange/g' /etc/locale.gen > /etc/locale.gen.change ; sed 's/#$lang/$lang/g' /etc/locale.gen.change > /etc/locale.gen ; locale-gen" | \
 yad --progress \
 	--title="Mazon Install" \
 	--width="500" \
