@@ -79,7 +79,8 @@ LANGUAGE=$(echo "$form_lang" | cut -d"|" -f 1)
 KEYBOARD=$(echo "$form_lang" | cut -d"|" -f 2)
 lang=$(echo $LANGUAGE | cut -d. -f1,2)
 
-form_part=$(yad --title="Mazon Install" \
+form_part=$(yad \
+	--title="Mazon Install" \
 	--width="500" \
 	--height="200" \
 	--center \
@@ -101,7 +102,8 @@ wait
 
 partitions=( $( fdisk -l | grep $HD | egrep -o '/dev/sd[a-z][0-9]' | uniq | sed 's/\n/!/g' | sed ':a;N;s/\n/\!/g;ta' ) )
 
-form_part=$(yad --title="Mazon Install" \
+form_part=$(yad \
+	--title="Mazon Install" \
 	--width="500" \
 	--height="200" \
 	--center \
@@ -134,7 +136,8 @@ if [[ $MOUNTSWAP != "not mounted" ]] ; then
 	swapon $MOUNTSWAP
 fi
 
-form_user=$(yad --title="Mazon Install" \
+form_user=$(yad \
+	--title="Mazon Install" \
 	--width="500" \
 	--height="200" \
 	--center \
@@ -151,7 +154,8 @@ ret=$?
 MUSER=$(echo "$form_user" | cut -d"|" -f 1)
 MPASSWD=$(echo "$form_user" | cut -d"|" -f 2)
 
-form_resumo=$(yad --title="Mazon Install" \
+form_resumo=$(yad \
+	--title="Mazon Install" \
 	--width="500" \
 	--height="200" \
 	--center \
@@ -241,17 +245,23 @@ yad --progress \
 	--auto-kill
 
 ### GRUB FORM
-form_grub=$(yad --title="Mazon Install" \
+form_grub=$(yad \
+	--title="Mazon Install" \
 	--width="500" \
 	--height="200" \
 	--center \
 	--image="question.png" \
-	--text="\nVocê gostaria de instalar o GRUB?\n" \
+	--text="\nGostaria de instalar o GRUB? Se sim, qual HD gostaria de instalar?\n" \
+	--form \
+	--field="/dev/sd(x)":CB $hd \
+	--field="O GRUB é um multi-carregador para boot do sistema operacional.\nSe caso seu computador não possui um carredor já instalado é altamente recomendado instalá-lo.":LBL \
 	--button="gtk-close:1" --button="gtk-ok:0"
-)
+	)
 
 ret=$?
 [[ $ret -eq 1 ]] && installok
+
+GRUBHD=$(echo "$form_grub" | cut -d"|" -f 1)
 
 ### GRUB INSTALL
 cd /mnt/mazonos/
@@ -260,7 +270,7 @@ mount --rbind /sys sys/
 mount --rbind /run run/
 mount --type proc /proc proc/
 cd -
-chroot /mnt/mazonos/ bin/bash -c "grub-install $HD > /dev/null 2>&1" | \
+chroot /mnt/mazonos/ bin/bash -c "grub-install $GRUBHD > /dev/null 2>&1" | \
 	yad --progress \
 	--title="Mazon Install" \
 	--width="500" \
