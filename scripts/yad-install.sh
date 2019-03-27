@@ -13,6 +13,9 @@
 ## LOCALE VAR
 locales=( $( cat /etc/locale.gen | grep _ | sed 's/#//g' | sed 's/  $/!/g' | sed 's/ /./g' | awk 'NR>4' | sed 's/\n/!/g' |  sed ':a;N;s/\n//g;ta'  ) )
 
+## CURRENT LOCALE
+localechange=$(cat /etc/locale.gen | grep -v "#")
+
 ## KEYMAP VAR
 keymaps=( $( find /usr/share/keymaps/ -name "*.map.gz" | cut -d/ -f7 | sed -e "s/.map.gz/ /g" | sed "s/ /\!/g" | sed 's/windowkeys!/windowkeys/g' | sort | sed ':a;N;s/\n//g;ta' ) )
 
@@ -210,6 +213,31 @@ yad --progress \
 	--auto-close \
 	--auto-kill
 
+### SETING LOCALE
+chroot /mnt/mazonos/ /bin/bash -c "sed 's/LANG=.*/LANG=$LANGUAGE/g' /etc/profile.d/i18n.sh > /etc/profile.d/i18n.sh.change ; mv /etc/profile.d/i18n.sh.change /etc/profile.d/i18n.sh ; sed 's/$localechange/#$localechange/g' /etc/locale.gen > /etc/locale.gen.change ; sed 's/#$LANGUAGE/$LANGUAGE/g' /etc/locale.gen.change > /etc/locale.gen ; locale-gen" | \
+yad --progress \
+	--title="Mazon Install" \
+	--width="500" \
+	--height="100" \
+	--center \
+	--text="\nAjustando linguagens...\n" \
+	--progress-text="ajusting..." \
+	--pulsate \
+	--auto-close \
+	--auto-kill
+
+### SETING KEYBOARD
+chroot /mnt/mazonos/ /bin/bash -c "sed 's/KEYMAP=\".*\"/KEYMAP=\"$KEYBOARD\"/g' /etc/sysconfig/console > /etc/sysconfig/console.change ; mv /etc/sysconfig/console.change /etc/sysconfig/console " | \
+yad --progress \
+	--title="Mazon Install" \
+	--width="500" \
+	--height="100" \
+	--center \
+	--text="\nAjustando keyboard...\n" \
+	--progress-text="ajusting..." \
+	--pulsate \
+	--auto-close \
+	--auto-kill
 
 ### GRUB FORM
 form_grub=$(yad --title="Mazon Install" \
