@@ -187,17 +187,17 @@ rsync -ravp --info=progress2 /lib/initramfs/system/ /mnt/mazonos/ | grep -o "[0-
 ### FSTAB CONFIGURATION
 #####################################
 
-bl=$(blkid $MOUNTROOT | cut -d"\"" -f2)
+bl=$(blkid -s UUID -o value $MOUNTROOT)
 echo "UUID=$bl / ext4 defaults 1 1" >> /mnt/mazonos/etc/fstab
 
 if [[ $MOUNTSWAP != "not mounted" ]] ; then
-	blswap=$(blkid $MOUNTSWAP | cut -d"\"" -f2)
+	blswap=$(blkid -s UUID -o value $MOUNTSWAP)
 	echo "UUID=$blswap swap swap pri=1 0 0" >> /mnt/mazonos/etc/fstab
 fi
 
 if [[ $MOUNTHOME != "not mounted" ]] ; then
 	mount $MOUNTHOME /mnt/mazonos/home
-	blhome=$(blkid $MOUNTHOME | cut -d"\"" -f2)
+	blhome=$(blkid -s UUID -o value $MOUNTHOME)
 	echo "UUID=$blhome /home ext4 defaults 0 0" >> /mnt/mazonos/etc/fstab
 fi
 
