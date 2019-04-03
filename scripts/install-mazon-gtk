@@ -234,8 +234,6 @@ if [[ $ret -eq 4 ]] ; then
 	warning
 fi
 
-
-
 ### INSTALL COMPLETE
 ### FSTAB CONFIGURATION
 #####################################
@@ -243,12 +241,12 @@ fi
 bl=$(blkid -s UUID -o value $MOUNTROOT)
 echo "UUID=$bl / ext4 defaults 1 1" >> /mnt/mazonos/etc/fstab
 
-if [[ $MOUNTSWAP != "not mounted" ]] ; then
+if [[ $MOUNTSWAP != "not mounted" ]] && [[ -n $MOUNTSWAP ]] ; then
 	blswap=$(blkid -s UUID -o value $MOUNTSWAP)
 	echo "UUID=$blswap swap swap pri=1 0 0" >> /mnt/mazonos/etc/fstab
 fi
 
-if [[ $MOUNTHOME != "not mounted" ]] ; then
+if [[ $MOUNTHOME != "not mounted" ]] && [[ -n $MOUNTHOME ]]; then
 	mount $MOUNTHOME /mnt/mazonos/home
 	blhome=$(blkid -s UUID -o value $MOUNTHOME)
 	echo "UUID=$blhome /home ext4 defaults 0 0" >> /mnt/mazonos/etc/fstab
