@@ -41,6 +41,37 @@ installok(){
 	exit 0
 }
 
+noobinstall(){
+	parted --script $HD mklabel msdos mkpart primary linux-swap 1MiB 2GB mkparted primary ext4 2GB 100%
+	mkfs.ext4 "$HD"2
+	mkswap "$HD"1
+	swapon "$HD"1
+	yad --progress \
+	--title="Mazon Install" \
+	--width="500" \
+	--height="100" \
+	--center \
+	--text="\nAguarde enquanto instalamos a Mazon para você.\n" \
+	--progress-text="installing... wait 3-10 minutes..." \
+	--pulsate \
+	--percentage=1 \
+	--auto-close \
+	--auto-kill
+}
+
+warning(){
+	yad \
+	--title="Mazon Install" \
+	--width="500" \
+	--height="200" \
+	--center \
+	--image="warn.png" \
+	--align="center" \
+	--text="\n\nWARNING!\n\nSe continuar, todos os seus dados vão ser apagados!\nVocê tem certeza?" \
+	--button="gtk-close:0" --button="gtk-ok:1"
+	rt=$?
+	[[ $rt -eq 1 ]] && noobinstall
+}
 
 # SCREENS
 #######################
@@ -142,7 +173,7 @@ form_user=$(yad \
 	--height="200" \
 	--center \
 	--image="user.png" \
-	--text="\nCrie um usuário:\n" \
+	--text="\nCrie um usuário:\n Seu usúario deve conter apenas letras minusculas e sem espaços. Ex: vinicius" \
 	--form \
 	--field="Usuário :" \
 	--field="Senha :":H \
@@ -175,7 +206,7 @@ rsync -ravp --info=progress2 /lib/initramfs/system/ /mnt/mazonos/ | grep -o "[0-
 	--width="500" \
 	--height="100" \
 	--center \
-	--text="\nAguardem enquanto instalamos a Mazon para você.\n" \
+	--text="\nAguarde enquanto instalamos a Mazon para você.\n" \
 	--progress-text="installing... wait 3-10 minutes..." \
 	--pulsate \
 	--percentage=1 \
