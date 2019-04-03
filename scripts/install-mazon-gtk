@@ -76,16 +76,16 @@ install(){
 }
 
 noobinstall(){
-	# Umount all partitions
+	# Umount all partitions	
 	umount -Rl /mnt
 	umount -Rl /mnt/mazonos
 	swapoff "$HD"1
 
 	mkdir /mnt/mazonos
 	# Created partitions /dev/sda1 (swap) | /dev/sda2 (/)
-	parted --script /dev/sda mklabel msdos mkpart primary linux-swap 1MiB 2GB mkpart primary ext4 2GB 100%
+	parted --script $HD mklabel msdos mkpart primary linux-swap 1MiB 2GB mkpart primary ext4 2GB 100%
 	# Format partition /dev/sda2
-	mkfs.ext4 "$HD"2
+	mkfs.ext4 -F "$HD"2
 	# Create swap
 	mkswap "$HD"1
 	swapon "$HD"1
