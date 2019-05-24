@@ -11,10 +11,10 @@ import sys, os, requests, csv, threading, itertools, time, re
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 
-
 url = "http://mazonos.com/packages/"
-filecsv = "mz_base.csv"
+filecsv = "/var/lib/mz/mz_base.csv"
 found = False
+choose = ""
 
 def menu():
     print("""mz 1.0.0 (amd64)
@@ -49,13 +49,15 @@ def animate():
         time.sleep(0.1)
     sys.stdout.write('\r' + textAnimate + 'complete!   \n')
 
-try:
-    sys.argv[1]
-except IndexError:
-    menu()
-    exit(0)
-else:
-    choose = str(sys.argv[1])
+def main():
+    try:
+        sys.argv[1]
+    except IndexError:
+        menu()
+        exit(0)
+    else:
+        global choose
+        choose = str(sys.argv[1])
 
 def search():
     try:
@@ -130,9 +132,13 @@ def install():
                 if package in line[1]:
                     found = True
                     if internet_on():
-                        os.system("wget -O /tmp/" + line[1] + " " + url + line[0] + line[1])
-                        os.system("banana install " + "/tmp/" + line[1])
-                        os.system("rm " + "/tmp/" + line[1])
+                        install = input("You like install " + package + " ? [Y/n] : " )
+                        if install == "Y" or install == "y":
+                            os.system("wget -O /tmp/" + line[1] + " " + url + line[0] + line[1])
+                            os.system("banana install " + "/tmp/" + line[1])
+                            os.system("rm " + "/tmp/" + line[1])
+                        else:
+                            exit(0)
                     else:
                         print("Please connect internet...")
                         exit(0)
@@ -153,7 +159,13 @@ def remove():
         newlist = list(filter(r.match, onlyfiles))
         if newlist:
             found = True
-            print(newlist)
+            for pack in newlist:
+                package = pack.replace('.list', '')
+                remove = input("You like remove " + package + "? [Y/n] : ")
+                if remove == "y" or remove == "Y":
+                    os.system("banana remove " + package + " -y")
+                else:
+                    exit(0)
 
         if found == False:
             print("Pacakge not found.")
@@ -173,7 +185,9 @@ def update():
         soup = BeautifulSoup(r.content, "html.parser")
         links = soup.find_all("a")
         
-        os.system("rm " + filecsv)
+        if os.path.isfile(filecsv):
+            os.system("rm " + filecsv)
+
         for link in links:
             if '/' in link.text:
                 urls = url + link.text
@@ -211,6 +225,8 @@ def update():
 
 def upgrade():
     print("upgrading...")
+
+main()
 
 chooses = ["search","install","remove","show","update","upgrade"]
 
