@@ -187,6 +187,9 @@ def update():
         
         if os.path.isfile(filecsv):
             os.system("rm " + filecsv)
+        else:
+            os.system("mkdir -p /var/lib/mz")
+            os.system("touch " + filecsv)
 
         for link in links:
             if '/' in link.text:
